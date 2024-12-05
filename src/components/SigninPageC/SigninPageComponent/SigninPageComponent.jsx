@@ -1,7 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Input, Button, Typography } from 'antd';
-
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 const { Link } = Typography;
 
 const RegisterWrapper = styled.div`
@@ -57,6 +58,68 @@ const StyledLink = styled(Link)`
 `;
 
 const SigninPageComponent = () => {
+  const navigate = useNavigate();
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [userName, setUsername] = useState('')
+  const [password, setPassWord] = useState("")
+  const [password2, setPassWord2] = useState("")
+  const handleSignUp = () => {
+    if (!name){
+      alert("Vui lòng nhập tên người dùng")
+      return
+    }
+    if (!email.match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) {
+      alert("Email không hợp lệ")
+      return
+  }
+  if (!phone.match(/(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})\b/)) {
+      alert("Số điện thoại không hợp lệ")
+      return
+  }
+  if (!userName){
+    alert("Vui lòng nhập tên đăng nhập")
+    return
+  }
+  if (password !== password2 )
+      {
+          alert("Mật khẩu không trùng khớp")
+          return 
+      }
+  // if (password.length < 5)
+  //     {
+  //         alert("Yêu cầu mật khẩu ít nhất 5 ký tự")
+  //         return
+  //     }
+
+    fetch("http://localhost:8081/v1/api/signUp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: name,
+        email: email,
+        phone: phone,
+        username: userName,
+        password: password,
+      }),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        console.log(res)
+        if (res.success === false) {
+          localStorage.clear();
+          alert("Mời đăng ký lại, dữ liệu đã nhập trùng");
+        } else {
+          alert("Tạo tài khoản thành công, mời đăng nhập");
+          navigate("/login");
+        }
+      })
+      .catch((err) => console(err));
+  };
+
   return (
     <RegisterWrapper>
       <Title>ĐĂNG KÝ</Title>
@@ -64,12 +127,13 @@ const SigninPageComponent = () => {
       <RegisterText>
         Đã có tài khoản, đăng nhập <StyledLink href="#">tại đây</StyledLink>
       </RegisterText>
-      <StyledInput placeholder="Nhập tên của bạn (*)" />
-      <StyledInput placeholder="Nhập email của bạn (*)" />
-      <StyledInput placeholder="Số điện thoại" />
-      <StyledInput type="password" placeholder="Mật khẩu" />
-      <StyledInput type="password" placeholder="Nhập lại mật khẩu" />
-      <StyledButton type="primary">ĐĂNG KÝ</StyledButton>
+      <StyledInput value={name} onChange={(e) => setName(e.target.value)} placeholder="Nhập tên của bạn (*)" />
+      <StyledInput value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Nhập email của bạn (*)" />
+      <StyledInput value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Nhập số điện thoại" />
+      <StyledInput value={userName} onChange={(e) => setUsername(e.target.value)} placeholder="Nhập tên đăng nhập (*)" />
+      <StyledInput value={password} onChange={(e) => setPassWord(e.target.value)} type="password" placeholder="Mật khẩu" />
+      <StyledInput value={password2} onChange={(e) => setPassWord2(e.target.value)} type="password" placeholder="Nhập lại mật khẩu" />
+      <StyledButton type="primary" onClick={handleSignUp} > ĐĂNG KÝ</StyledButton>
     </RegisterWrapper>
   );
 };

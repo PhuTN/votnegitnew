@@ -23,7 +23,7 @@ export const routes = [
         isShowHeader: true
     },
     {
-        path: '/product/product-detail',
+        path: '/product/product-detail/:productName',
         page:ProductDetailPage,
         isShowHeader: true
     },
@@ -53,7 +53,7 @@ export const routes = [
         isShowHeader: true
     },
     {
-        path: '/order-detail',
+        path: '/order-detail/:orderID',
         page: OrderDetailPage,
         isShowHeader: true
     },

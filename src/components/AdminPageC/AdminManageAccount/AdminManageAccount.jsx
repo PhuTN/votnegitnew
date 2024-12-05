@@ -1,14 +1,17 @@
-import React, { useState } from 'react'; 
+import React, { useState, useContext } from 'react'; 
 import { Modal, Table, Button, Select, Input, Row, Col, Tooltip, Form, message } from 'antd'; 
 import { EditOutlined, UndoOutlined } from '@ant-design/icons'; // Importing necessary icons
-
+import { AppContexts } from '../../../contexts/AppContexts';
 import AdminTableComponent from '../AdminTableComponent/AdminTableComponent'; 
 
 const AdminManageAccount = () => { 
+  const {users} = useContext(AppContexts)
+
     const orderCategories = [
         { label: 'ID', value: 'id' },
         { label: 'Loại', value: 'type' },
         { label: 'Tên tài khoản', value: 'username' },
+        { label: 'Tên người dùng', value: 'name' },
         { label: 'Số điện thoại', value: 'phoneNumber' },
         { label: 'Địa chỉ', value: 'address' },
         { label: 'Email', value: 'email' },
@@ -59,7 +62,8 @@ const AdminManageAccount = () => {
 
   const [isModalVisible, setIsModalVisible] = useState(false); 
   const [selectedOrder, setSelectedOrder] = useState(null); 
-  const [filteredData, setFilteredData] = useState(dataOrders); 
+  // const [filteredData, setFilteredData] = useState(dataOrders); 
+  const [filteredData, setFilteredData] = useState(users); 
   const [selectedCategory, setSelectedCategory] = useState(orderCategories[0].value); 
   const [isUpdateShippingModalVisible, setIsUpdateShippingModalVisible] = useState(false);
   const [isReturnReasonModalVisible, setIsReturnReasonModalVisible] = useState(false);
@@ -105,7 +109,7 @@ const AdminManageAccount = () => {
   }; 
 
   const handleSearch = (searchText) => { 
-    const filtered = dataOrders.filter((item) => { 
+    const filtered = users.filter((item) => { 
       const columnKey = selectedCategory; 
       return item[columnKey] && item[columnKey].toString().toLowerCase().includes(searchText.toLowerCase()); 
     }); 
@@ -159,21 +163,22 @@ const AdminManageAccount = () => {
 
   // Define columnsOrder inside the component to access handleStatusChange and action handlers
   const columnsOrder = [
-    { title: 'ID', dataIndex: 'id', key: 'id', align: 'left' },
+    { title: 'ID', dataIndex: '_id', key: '_id', align: 'left' },
     {
       title: 'Loại',
-      dataIndex: 'type',
-      key: 'type',
+      dataIndex: 'role',
+      key: 'role',
       align: 'left',
       filters: [
-        { text: 'Khách hàng', value: 'Khách hàng' },
+        { text: 'Customer', value: 'Customer' },
         { text: 'Nhân viên bán hàng', value: 'Nhân viên bán hàng' },
         { text: 'Nhân viên kho', value: 'Nhân viên kho' },
       ],
-      onFilter: (value, record) => record.type === value,
+      onFilter: (value, record) => record.role === value,
     },
     { title: 'Tên tài khoản', dataIndex: 'username', key: 'username', align: 'left' },
-    { title: 'Số điện thoại', dataIndex: 'phoneNumber', key: 'phoneNumber', align: 'left' },
+    { title: 'Tên người dùng', dataIndex: 'name', key: 'name', align: 'left' },
+    { title: 'Số điện thoại', dataIndex: 'phone', key: 'phone', align: 'left' },
     { title: 'Địa chỉ', dataIndex: 'address', key: 'address', align: 'left' },
     { title: 'Email', dataIndex: 'email', key: 'email', align: 'left' },
     {
@@ -181,7 +186,7 @@ const AdminManageAccount = () => {
       dataIndex: 'gender',
       key: 'gender',
       align: 'left',
-      render: (gender) => (gender === 'male' ? 'Nam' : 'Nữ'),
+      render: (gender) => (gender === 'male' ? 'Nam' : ''),
       filters: [
         { text: 'Nam', value: 'male' },
         { text: 'Nữ', value: 'female' },

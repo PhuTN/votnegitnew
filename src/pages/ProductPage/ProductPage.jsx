@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import styled from 'styled-components';
 
 import FilterSideBarComponent from '../../components/ProductPageC/FilterSideBarCombonent/FilterSideBarCombonent';
@@ -6,6 +6,8 @@ import ProductGridComponent from '../../components/ProductPageC/ProductGridCompo
 import CustomBreadcrumb from '../../components/Others/CustomBreadScumb/CustomBreadScumb';
 
 import { filtersData } from '../../models/fake-data';
+
+import { AppContexts } from '../../contexts/AppContexts';
 const PageContainer = styled.div`
   display: flex;
   padding: 16px;
@@ -24,10 +26,10 @@ const Content = styled.div`
 
 
 const ProductPage = () => {
-    
+    const {products} = useContext(AppContexts);
       
 
-  const products = [
+  const products2 = [
     {
         id: 1,
         name: 'Vợt Cầu Lông VNB V200 Xanh Chính Hãng',

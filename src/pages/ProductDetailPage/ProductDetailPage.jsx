@@ -5,7 +5,7 @@ import ProductDetailComponent from '../../components/ProductDetailPageC/ProductD
 import SideBarProductType from '../../components/ProductDetailPageC/SideBarProductType/SideBarProductType';
 import ProductDetails from '../../components/ProductDetailPageC/ProductDecriptionComponent/ProductDecriptionComponent';
 import CustomBreadcrumb from '../../components/Others/CustomBreadScumb/CustomBreadScumb';
-
+import { useParams, useLocation } from 'react-router-dom';
 const ContainerWrapper = styled.div`
   display: flex;
   justify-content: center;
@@ -37,6 +37,17 @@ const StyledProductDetails = styled(ProductDetails)`
 `;
 
 const ProductDetailPage = () => {
+
+  const { productName } = useParams();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const productId = params.get('productId');
+
+
+
+
+
+
   const productData = {
     description: "This is a sample product description for Mô Tả Sản Phẩm.",
     specifications: [

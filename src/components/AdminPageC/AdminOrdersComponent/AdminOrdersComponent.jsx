@@ -1,17 +1,19 @@
-import React, { useState } from 'react'; 
+import React, { useState, useContext, useEffect } from 'react'; 
 import { Modal, Table, Button, Select, Input, Row, Col, Tooltip, Form, message } from 'antd'; 
 import { EditOutlined, UndoOutlined } from '@ant-design/icons'; // Importing necessary icons
-import { orderCategories, dataOrders } from '../../../models/fake-data'; 
+import { orderCategories } from '../../../models/fake-data'; 
 import AdminTableComponent from '../AdminTableComponent/AdminTableComponent'; 
-
+import { AppContexts } from '../../../contexts/AppContexts';
 const AdminOrdersComponent = () => { 
+  const {orders} = useContext(AppContexts);
   const [isModalVisible, setIsModalVisible] = useState(false); 
   const [selectedOrder, setSelectedOrder] = useState(null); 
-  const [filteredData, setFilteredData] = useState(dataOrders); 
+  const [filteredData, setFilteredData] = useState(orders); 
   const [selectedCategory, setSelectedCategory] = useState(orderCategories[0].value); 
   const [isUpdateShippingModalVisible, setIsUpdateShippingModalVisible] = useState(false);
   const [isReturnReasonModalVisible, setIsReturnReasonModalVisible] = useState(false);
   const [currentOrderId, setCurrentOrderId] = useState(null);
+
 
   // Separate form instances for each modal to avoid conflicts
   const [shippingForm] = Form.useForm();
@@ -20,7 +22,7 @@ const AdminOrdersComponent = () => {
   // Handler to open Update Shipping Progress Modal
   const handleUpdateShipping = (orderId) => {
     setCurrentOrderId(orderId);
-    const order = filteredData.find((order) => order.orderId === orderId);
+    const order = filteredData.find((order) => order._id === orderId);
     setSelectedOrder(order);
     // Set initial value for the form based on current shipping status
     shippingForm.setFieldsValue({ shippingStatus: order.shippingStatus || '' });
@@ -30,18 +32,28 @@ const AdminOrdersComponent = () => {
   // Handler to open Return Reason Modal
   const handleReturnReason = (orderId) => {
     setCurrentOrderId(orderId);
-    const order = filteredData.find((order) => order.orderId === orderId);
+    const order = filteredData.find((order) => order._id === orderId);
     setSelectedOrder(order);
     // Set initial value for the form based on existing return reason
     returnReasonForm.setFieldsValue({ returnReason: order.returnReason || '' });
     setIsReturnReasonModalVisible(true);
   };
 
-  const handleViewProducts = (orderId) => { 
-    const order = filteredData.find((order) => order.orderId === orderId); 
-    setSelectedOrder(order); 
-    setIsModalVisible(true); 
-  }; 
+  const handleViewProducts = (orderId) => {
+    const order = filteredData.find((order) => order._id === orderId);
+    if (order) {
+      console.log('Selected Order:', order);
+      setSelectedOrder(order);
+      setTimeout(() => {
+        setIsModalVisible(true);
+      }, 0);
+    } else {
+      console.log('Order not found');
+    }
+  };
+  
+  
+  
 
   const handleModalClose = () => { 
     setIsModalVisible(false); 
@@ -53,7 +65,7 @@ const AdminOrdersComponent = () => {
   }; 
 
   const handleSearch = (searchText) => { 
-    const filtered = dataOrders.filter((item) => { 
+    const filtered = orders.filter((item) => { 
       const columnKey = selectedCategory; 
       return item[columnKey] && item[columnKey].toString().toLowerCase().includes(searchText.toLowerCase()); 
     }); 
@@ -62,7 +74,7 @@ const AdminOrdersComponent = () => {
 
   const handleStatusChange = (orderId, status) => { 
     const updatedOrders = filteredData.map((order) => { 
-      if (order.orderId === orderId) { 
+      if (order._id === orderId) { 
         return { ...order, orderStatus: status }; // Update orderStatus
       } 
       return order; 
@@ -110,46 +122,76 @@ const AdminOrdersComponent = () => {
       });
   };
 
-  const productColumns = [ 
-    { title: 'ID', dataIndex: 'id', key: 'id' }, 
-    { 
-      title: 'Hình ảnh', 
-      dataIndex: 'image', 
-      key: 'image', 
-      render: (image) => <img src={image} alt="Product" style={{ width: 50, height: 50 }} /> 
-    }, 
-    { title: 'Tên sản phẩm', dataIndex: 'name', key: 'name' }, 
-    { title: 'Số lượng', dataIndex: 'quantity', key: 'quantity' }, 
-    { 
-      title: 'Giá', 
-      dataIndex: 'price', 
-      key: 'price', 
-      render: (price) => `${price.toLocaleString()} VND` 
-    }, 
-  ]; 
+  const productColumns = [
+    {
+      title: "ID",
+      key: "id",
+      render: (_, record) => record.productId?._id || "No ID",
+    },
+    {
+      title: "Hình ảnh",
+      key: "image",
+      render: (_, record) => {
+        const selectedType = record.productId?.type.find(
+          (type) => type.color === record.color
+        );
+        return selectedType?.images?.main ? (
+          <img
+            src={selectedType.images.main}
+            alt="Product"
+            style={{ width: 50, height: 50 }}
+          />
+        ) : (
+          "No Image"
+        );
+      },
+    },
+    {
+      title: "Tên sản phẩm",
+      key: "name",
+      render: (_, record) => record.productId?.name || "No Name",
+    },
+    {
+      title: "Số lượng",
+      key: "quantity",
+      render: (_, record) =>
+        record.quantity != null ? record.quantity : "No Quantity",
+    },
+    {
+      title: "Giá",
+      key: "price",
+      render: (_, record) =>
+        record.price != null
+          ? `${record.price.toLocaleString()} VND`
+          : "No Price",
+    },
+  ];
+  
+  
+  
 
-  const productsData = selectedOrder
-    ? [
-        { id: 1, name: 'Vợt Cầu Lông Lining Turbo Charging Marshal', price: 529000, quantity: 2, image: 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-vnb-v200-xanh-2.webp' },
-        { id: 2, name: 'Giày cầu lông Yonex Power Cushion', price: 1290000, quantity: 1, image: 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-vnb-v200-xanh-2.webp' },
-        { id: 3, name: 'Giày cầu lông Yonex Power Cushion', price: 1290000, quantity: 1, image: 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-vnb-v200-xanh-2.webp' },
-      ]
-    : [];
+  // const productsData = selectedOrder
+  //   ? [
+  //       { id: 1, name: 'Vợt Cầu Lông Lining Turbo Charging Marshal', price: 529000, quantity: 2, image: 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-vnb-v200-xanh-2.webp' },
+  //       { id: 2, name: 'Giày cầu lông Yonex Power Cushion', price: 1290000, quantity: 1, image: 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-vnb-v200-xanh-2.webp' },
+  //       { id: 3, name: 'Giày cầu lông Yonex Power Cushion', price: 1290000, quantity: 1, image: 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-vnb-v200-xanh-2.webp' },
+  //     ]
+  //   : [];
 
   // Define columnsOrder inside the component to access handleStatusChange and action handlers
   const columnsOrder = [
     {
       title: 'Mã đơn hàng',
-      dataIndex: 'orderId',
-      key: 'orderId',
+      dataIndex: '_id',
+      key: '_id',
       align: 'left',
     },
     {
       title: 'Sản phẩm',
-      dataIndex: 'products',
+      dataIndex: 'items',
       key: 'products',
       render: (_, record) => (
-        <Button type="link" onClick={() => handleViewProducts(record.orderId)}>
+        <Button type="link" onClick={() => handleViewProducts(record._id)}>
           Xem sản phẩm
         </Button>
       ),
@@ -157,16 +199,17 @@ const AdminOrdersComponent = () => {
     },
     {
       title: 'Tên khách hàng',
-      dataIndex: 'name',
+      dataIndex: 'userId.name',
       key: 'name',
       align: 'left',
-      // Removed onFilter here as filtering is handled separately
+      render: (_, record) => record?.userId?.name || 'Không có tên khách hàng',
     },
     {
       title: 'Số điện thoại',
-      dataIndex: 'phoneNumber',
-      key: 'phoneNumber',
+      dataIndex: 'userId.phone',
+      key: 'phone',
       align: 'left',
+      render: (_, record) => record?.userId?.phone || 'Không có số điện thoại',
     },
     {
       title: 'Địa chỉ',
@@ -176,35 +219,38 @@ const AdminOrdersComponent = () => {
     },
     {
       title: 'Tổng tiền',
-      dataIndex: 'totalAmount',
-      key: 'totalAmount',
-      render: (amount) => `${amount.toLocaleString()} VND`,
+      dataIndex: 'totalPrice',
+      key: 'totalPrice',
+      render: (amount) => amount != null ? `${amount.toLocaleString()} VND` : 'Không có tổng tiền',
       align: 'left',
       sorter: (a, b) => a.totalAmount - b.totalAmount, // Numeric sorting
     },
     {
       title: 'Email',
-      dataIndex: 'email',
+      dataIndex: 'userId.email',
       key: 'email',
       align: 'left',
+      render: (_, record) => record?.userId?.email || 'Không có email',
     },
     {
       title: 'Mã khách hàng',
-      dataIndex: 'userId',
-      key: 'userId',
+      dataIndex: 'userId._id',
+      key: 'userId._id',
       align: 'left',
+      render: (_, record) => record?.userId?._id || 'Không có mã khách hàng',
     },
     {
       title: 'Trạng thái đơn hàng',
-      dataIndex: 'orderStatus',
-      key: 'orderStatus',
+      dataIndex: 'state',
+      key: 'state',
       align: 'left',
       filters: [
-        { text: 'Đang xử lý', value: 'processing' },
-        { text: 'Đã giao hàng', value: 'delivered' },
-        { text: 'Đã hủy', value: 'cancelled' },
-        { text: 'Xử lý đổi trả', value: 'returning' },
-        { text: 'Hoàn tất', value: 'finish' },
+        { text: 'Đang xử lý', value: 'Pending' },
+        { text: 'Đã giao hàng', value: 'Done' },
+        { text: 'Đã hủy', value: 'Cancel' },
+        { text: 'Xử lý đổi trả', value: 'Refund' },
+        { text: 'Đang giao hàng', value: 'Shipping' },
+        { text: 'Xác nhận đơn', value: 'Confirming' },
       ],
       onFilter: (value, record) => record.orderStatus === value,
       render: (status, record) => (
@@ -212,11 +258,12 @@ const AdminOrdersComponent = () => {
           value={status}
           style={{ width: 150 }}
           options={[
-            { label: 'Đang xử lý', value: 'processing' },
-            { label: 'Đã giao hàng', value: 'delivered' },
-            { label: 'Đã hủy', value: 'cancelled' },
-            { label: 'Xử lý đổi trả', value: 'returning' },
-            { label: 'Hoàn tất', value: 'finish' },
+            { label: 'Đang xử lý', value: 'Pending' },
+            { label: 'Đã giao hàng', value: 'Done' },
+            { label: 'Đã hủy', value: 'Cancel' },
+            { label: 'Xử lý đổi trả', value: 'Refund' },
+            { label: 'Đang giao hàng', value: 'Shipping' },
+            { label: 'Xác nhận đơn', value: 'Confirming' },
           ]}
           onChange={(value) => handleStatusChange(record.orderId, value)}
         />
@@ -262,6 +309,7 @@ const AdminOrdersComponent = () => {
       },
     },
   ];
+  console.log('Items:', selectedOrder?.items);
 
   return ( 
     <div style={{ marginTop: '50px' }}> 
@@ -304,12 +352,12 @@ const AdminOrdersComponent = () => {
         footer={null} 
         width={1000} 
       > 
-        <Table 
-          columns={productColumns} 
-          dataSource={productsData} 
-          pagination={false} 
-          rowKey="id" 
-        /> 
+         <Table 
+    columns={productColumns} 
+    dataSource={selectedOrder?.items || []} 
+    pagination={false} 
+    rowKey={(record) => record._id || record.productId?._id || Math.random()} 
+  />  
       </Modal> 
 
       {/* Modal for Updating Shipping Progress */}

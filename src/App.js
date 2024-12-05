@@ -3,13 +3,13 @@ import { BrowserRouter as Router,Routes,Route } from 'react-router-dom'
 import {routes} from './routes'
 import DefaultComponent from './components/DefaultComponent/DefaultComponent'
 import HeaderComponent from './components/Others/Header/HeaderComponent/HeaderComponent'
-
+import { AppProvider } from './contexts/AppContexts'
 
 function App() {
   
   return (
     <div>
-     
+     <AppProvider>
       <Router>
         <Routes>
           {routes.map((route)=>{
@@ -28,7 +28,7 @@ function App() {
           
         </Routes>
       </Router>
-      
+      </AppProvider>
     </div>
   )
 }

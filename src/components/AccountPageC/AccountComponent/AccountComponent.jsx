@@ -68,7 +68,7 @@ const EditButton = styled(Button)`
 const columns = [
   {
     title: 'Đơn hàng',
-    dataIndex: 'orderNumber',
+    dataIndex: '_id',
     key: 'orderNumber',
   },
   {
@@ -83,12 +83,12 @@ const columns = [
   },
   {
     title: 'Giá tiền',
-    dataIndex: 'price',
+    dataIndex: 'totalPrice',
     key: 'price',
   },
   {
     title: 'Trạng thái',
-    dataIndex: 'status',
+    dataIndex: 'state',
     key: 'status',
   },
 ];
@@ -101,8 +101,8 @@ const AccountComponent = ({ personalInfo, orderData }) => {
       <InfoContainer>
         <Header>THÔNG TIN TÀI KHOẢN</Header>
         <InfoSection>
-          <InfoItem><InfoLabel>Họ tên:</InfoLabel> {personalInfo.fullName}</InfoItem>
-          <InfoItem><InfoLabel>Số ĐT:</InfoLabel> {personalInfo.phoneNumber}</InfoItem>
+          <InfoItem><InfoLabel>Họ tên:</InfoLabel> {personalInfo.name}</InfoItem>
+          <InfoItem><InfoLabel>Số ĐT:</InfoLabel> {personalInfo.phone}</InfoItem>
           <InfoItem><InfoLabel>Địa chỉ:</InfoLabel> {personalInfo.address}</InfoItem>
           <Link to='/account/account-info' style={{ textDecoration: 'none' }}>
             <EditButton>SỬA THÔNG TIN CÁ NHÂN</EditButton>
@@ -126,7 +126,7 @@ const AccountComponent = ({ personalInfo, orderData }) => {
 
               onClick: () => {
                 
-                navigate(`/order-detail`);
+                navigate(`/order-detail/${record._id}`);
               },
             })}
           />

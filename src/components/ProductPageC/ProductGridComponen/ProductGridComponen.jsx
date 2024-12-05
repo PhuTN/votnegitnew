@@ -92,21 +92,19 @@ const DiscountBadge = styled.span`
 `;
 
 const ProductItem = ({ product }) => {
-  const discountPercentage =
-    product.originalPrice && product.originalPrice > product.price
-      ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
-      : 0;
+  const discountPercentage = Math.round(((product.type[0].price - (product.type[0].price - product.discount)) / product.type[0].price) * 100)
+
 
   return (
     <ProductCard>
       {discountPercentage > 0 && <DiscountBadge>-{discountPercentage}%</DiscountBadge>}
-      <ProductImage src={product.image} alt={product.name} />
+      <ProductImage src={product.type[0].images.main} alt={product.name} />
       <ProductTitle>{product.name}</ProductTitle>
       <PriceContainer>
-        {product.originalPrice && (
-          <OriginalPrice>{product.originalPrice.toLocaleString()} đ</OriginalPrice>
+        {product.type[0].price && (
+          <OriginalPrice>{product.type[0].price} đ</OriginalPrice>
         )}
-        <ProductPrice>{product.price.toLocaleString()} đ</ProductPrice>
+        <ProductPrice>{product.type[0].price - product.discount} đ</ProductPrice>
       </PriceContainer>
     </ProductCard>
   );
@@ -121,18 +119,19 @@ const ProductGridComponent = ({ products }) => {
     setSortOrder(value);
   };
 
-  let sortedProducts = [...products];
-  if (sortOrder === "asc") {
-    sortedProducts.sort((a, b) => a.price - b.price);
-  } else if (sortOrder === "desc") {
-    sortedProducts.sort((a, b) => b.price - a.price);
-  } else if (sortOrder === "newest") {
-    sortedProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Chỉnh sửa để sử dụng createdAt
-  }
+  // let sortedProducts = [...products];
+  // if (sortOrder === "asc") {
+  //   sortedProducts.sort((a, b) => a.price - b.price);
+  // } else if (sortOrder === "desc") {
+  //   sortedProducts.sort((a, b) => b.price - a.price);
+  // } else if (sortOrder === "newest") {
+  //   sortedProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  // }
 
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  // const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -153,7 +152,7 @@ const ProductGridComponent = ({ products }) => {
       <ProductGrid>
         {currentProducts.map((product) => (
           <Link to = '/product/product-detail' style={{textDecoration:'none'}}>
-          <ProductItem key={product.id} product={product} />
+          <ProductItem key={product._id} product={product} />
           </Link>
         ))}
       </ProductGrid>
@@ -163,7 +162,8 @@ const ProductGridComponent = ({ products }) => {
         <Pagination
           current={currentPage}
           pageSize={productsPerPage}
-          total={sortedProducts.length}
+          // total={sortedProducts.length}
+          total={products.length}
           onChange={handlePageChange}
           showSizeChanger={false}
         />

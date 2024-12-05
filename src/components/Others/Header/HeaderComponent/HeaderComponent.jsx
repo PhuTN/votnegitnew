@@ -9,7 +9,7 @@ import user from '../../../../images/user.svg';
 import cart from '../../../../images/cart.svg';
 import MiniCartComponent from '../MiniCartComponent/MiniCartComponent';
 import SuggestSearchComponent from '../SuggestSearchComponent/SuggestSearchComponent';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const HeaderComponent = () => {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
@@ -24,7 +24,11 @@ const HeaderComponent = () => {
     setIsMenuVisible(false);
     
   };
-  
+  const navigate = useNavigate();
+  const handleLogout = ()=>{
+    localStorage.clear();
+          navigate("/");
+  }
   return (
     <div>
       <WrapperHeader justify="center" align="middle">
@@ -81,7 +85,7 @@ const HeaderComponent = () => {
           <Link style={{textDecoration:'none'}} to = '/signin'>
           <MenuItem2 style={{width:'100px'}}><MenuSpan>Đăng kí</MenuSpan></MenuItem2>
           </Link>
-          <MenuItem2 style={{width:'100px'}}><MenuSpan>Thoát</MenuSpan></MenuItem2>
+          <MenuItem2 style={{width:'100px'}} onClick={handleLogout}><MenuSpan>Thoát</MenuSpan></MenuItem2>
         </NewMenu>
           
         </FunCol>

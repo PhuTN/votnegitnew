@@ -1,6 +1,7 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import OrderDetailComponent from '../../components/OrderDetailPageC/OrderDetailComponent/OrderDetailComponent';
-
+import axios from 'axios';
+import { useParams } from "react-router"
 const OrderDetailPage = () => {
     const data = [
         {
@@ -84,6 +85,23 @@ const OrderDetailPage = () => {
           status: 'Đã giao',
         },
       ];
+      const params = useParams();
+      const [orderInfo, setOrderInfo] = useState([])
+
+      useEffect(() => {
+        axios.get(`http://localhost:8081/v1/api/getOrder/` + params.orderID)
+
+            .then(res => {
+              setOrderInfo(res.data)
+
+
+            })
+            .catch(err => {
+                console.log(err)
+            })
+
+
+    }, [params.orderID]);
 
       const personalInfo = {
         orderId: 'DH123456',

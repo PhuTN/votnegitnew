@@ -49,7 +49,7 @@ const ProductMenuComponent = () => {
             brands: ["Yonex", "VNB", "Kamito", "Victor", "Lining", "DonexPro", "Alien Armour", "SFD", "Kawasaki", "Pebble Beach"]
         },
         {
-            title: "Áo Cầu Lông",
+            title: "Testing",
             brands: ["Yonex", "VNB", "Kamito", "Victor", "Lining", "DonexPro", "Alien Armour", "SFD", "Kawasaki", "Pebble Beach"]
         },
     ];

@@ -100,47 +100,59 @@ const DiscountBadge = styled.span`
 const ProductSliderComponent = ({ tabItems, products }) => {
   const [activeTab, setActiveTab] = useState('all');
 
-  const filteredProducts = activeTab === 'all' 
-    ? products 
-    : products.filter(product => product.category === activeTab);
+  const filteredProducts = Array.isArray(products) && activeTab === 'all'
+  ? products
+  : Array.isArray(products) && products.filter(product =>
+      product.manufactuers.some(manufacturer => manufacturer.name === activeTab)
+  ) || [];
 
-  return (
-    <div>
-      <CenteredSpan>
-        Sản phẩm mới
-      </CenteredSpan>
-      <SliderContainer>
-        <StyledTabs defaultActiveKey="all" onChange={setActiveTab}>
-          {tabItems.map(tab => (
-            <Tabs.TabPane tab={tab.label} key={tab.key} />
-          ))}
-        </StyledTabs>
 
-        <Carousel responsive={responsive}>
-          {filteredProducts.map(product => {
-            const discountPercentage = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+
+  console.log(products);
+return (
+  <div>
+    <CenteredSpan>Sản phẩm mới</CenteredSpan>
+    <SliderContainer>
+      <StyledTabs defaultActiveKey="all" onChange={setActiveTab}>
+        {tabItems.map(tab => (
+          <Tabs.TabPane tab={tab.label} key={tab.key} />
+        ))}
+      </StyledTabs>
+
+      <Carousel responsive={responsive}>
+        {Array.isArray(filteredProducts) && filteredProducts.length > 0 ? (
+          filteredProducts.map(product => {
+            const discountPercentage = Math.round(((product.type[0].price - (product.type[0].price - product.discount)) / product.type[0].price) * 100);
             return (
-              <Link style={{textDecoration:'none'}} to = '/product/product-detail'>
-              <Card key={product.id} hoverable>
-                <DiscountBadge>-{discountPercentage}%</DiscountBadge>
-                <div className="ant-card-cover">
-                  <img alt={product.name} src={product.imgSrc} />
-                </div>
-                <div className="ant-card-body">
-                  <h4>{product.name}</h4>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p style={{ textDecoration: 'line-through', margin: 0 }}>{product.originalPrice.toLocaleString()}đ</p>
-                    <p style={{ fontWeight: 'bold', color: '#d0021b', fontSize: '16px', margin: 0 }}>{product.price.toLocaleString()}đ</p>
+              <Link style={{textDecoration: 'none'}} 
+              to={`/product/product-detail/${encodeURIComponent(product.name)}?productId=${product._id}`}
+              >
+                <Card hoverable>
+                  <DiscountBadge>-{discountPercentage}%</DiscountBadge>
+                  <div className="ant-card-cover">
+                    <img alt={product.name} src={product.type[0].images.main} />
                   </div>
-                </div>
-              </Card>
+                  <div className="ant-card-body">
+                    <h4>{product.name}</h4>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <p style={{ textDecoration: 'line-through', margin: 0 }}>{product.type[0].price.toLocaleString()}đ</p>
+                      <p style={{ fontWeight: 'bold', color: '#d0021b', fontSize: '16px', margin: 0 }}>
+                        {(product.type[0].price - product.discount).toLocaleString()}đ
+                      </p>
+                    </div>
+                  </div>
+                </Card>
               </Link>
             );
-          })}
-        </Carousel>
-      </SliderContainer>
-    </div>
-  );
+          })
+        ) : (
+          <p>No products available</p>
+        )}
+      </Carousel>
+    </SliderContainer>
+  </div>
+);
+
 };
 
 export default ProductSliderComponent;
