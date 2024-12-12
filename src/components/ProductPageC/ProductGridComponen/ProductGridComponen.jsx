@@ -28,17 +28,21 @@ const Title = styled.h2`
 
 const ProductGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));  // Giảm kích thước tối thiểu xuống 180px
+  gap: 16px;  // Giảm khoảng cách giữa các item
 `;
 
 const ProductCard = styled.div`
   border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 10px;
+  padding: 8px;  // Giảm padding
   text-align: center;
-  width: 170px;
+  width: 180px;  // Giảm chiều rộng
+  height: 260px; // Giảm chiều cao
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   &:hover {
     cursor: pointer;
   }
@@ -47,27 +51,27 @@ const ProductCard = styled.div`
 const ProductImage = styled.img`
   max-width: 100%;
   height: auto;
+  flex-grow: 1;
 `;
 
 const ProductTitle = styled.p`
-  font-size: 14px;
+  font-size: 13px;  // Giảm kích thước chữ
   color: #333;
-  margin: 8px 0;
+  margin: 6px 0;  // Giảm khoảng cách giữa các phần tử
   text-align: left;
-  ${ProductCard}:hover & {
-    color: #1DA0F1; 
-  }
+  flex-shrink: 0;
 `;
 
 const PriceContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;  // Giảm khoảng cách giữa giá
+  flex-shrink: 0;
 `;
 
 const OriginalPrice = styled.span`
-  font-size: 14px;
+  font-size: 13px;  // Giảm kích thước chữ
   color: #999;
   text-decoration: line-through;
   text-align: left;
@@ -76,93 +80,101 @@ const OriginalPrice = styled.span`
 const ProductPrice = styled.span`
   color: #d0021b;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 15px;  // Giảm kích thước chữ
   text-align: left;
 `;
 
 const DiscountBadge = styled.span`
   background-color: #fe0137;
   color: white;
-  padding: 4px 8px;
+  padding: 4px 6px;  // Giảm kích thước của badge
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 11px;  // Giảm kích thước chữ của badge
   position: absolute;
   top: 8px;
   right: 8px;
 `;
 
 const ProductItem = ({ product }) => {
-  const discountPercentage = Math.round(((product.type[0].price - (product.type[0].price - product.discount)) / product.type[0].price) * 100)
-
-
+  const color = product.colors[0];  // Default to the first color variant
+  const discountPercentage = Math.round(((color.price - color.discountPrice) / color.price) * 100);
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('vi-VN').format(value);
+  };
   return (
     <ProductCard>
       {discountPercentage > 0 && <DiscountBadge>-{discountPercentage}%</DiscountBadge>}
-      <ProductImage src={product.type[0].images.main} alt={product.name} />
+      <ProductImage src={color.images[0]} alt={product.name} />
       <ProductTitle>{product.name}</ProductTitle>
       <PriceContainer>
-        {product.type[0].price && (
-          <OriginalPrice>{product.type[0].price} đ</OriginalPrice>
-        )}
-        <ProductPrice>{product.type[0].price - product.discount} đ</ProductPrice>
+        {color.price && <OriginalPrice>{formatCurrency(color.price)} đ</OriginalPrice>}
+        <ProductPrice>{formatCurrency(color.discountPrice)} đ</ProductPrice>
       </PriceContainer>
     </ProductCard>
   );
 };
 
-const ProductGridComponent = ({ products }) => {
+const ProductGridComponent = ({ title, products }) => {
   const [sortOrder, setSortOrder] = useState("default");
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 20;
+
+
+
+  const sortedProducts = [...products];
+  if (sortOrder === "asc") {
+    sortedProducts.sort((a, b) => {
+      const aPrice = a.colors[0].discountPrice;
+      const bPrice = b.colors[0].discountPrice;
+      return aPrice - bPrice;
+    });
+  } else if (sortOrder === "desc") {
+    sortedProducts.sort((a, b) => {
+      const aPrice = a.colors[0].discountPrice;
+      const bPrice = b.colors[0].discountPrice;
+      return bPrice - aPrice;
+    });
+  } else if (sortOrder === "newest") {
+    sortedProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }
 
   const handleSortChange = (value) => {
     setSortOrder(value);
   };
 
-  // let sortedProducts = [...products];
-  // if (sortOrder === "asc") {
-  //   sortedProducts.sort((a, b) => a.price - b.price);
-  // } else if (sortOrder === "desc") {
-  //   sortedProducts.sort((a, b) => b.price - a.price);
-  // } else if (sortOrder === "newest") {
-  //   sortedProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  // }
-
   const indexOfLastProduct = currentPage * productsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  // const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+  const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
+
   return (
     <Container>
       <Header>
-        <Title>Vợt Cầu Lông</Title>
-        <Select defaultValue="default" onChange={handleSortChange} style={{ width: 150 ,textAlign:'center'}} >
+        <Title>{title} Cầu Lông</Title>
+        <Select defaultValue="default" onChange={handleSortChange} style={{ width: 150, textAlign: 'center' }}>
           <Option value="default">Mặc định</Option>
           <Option value="asc">Giá tăng dần</Option>
           <Option value="desc">Giá giảm dần</Option>
           <Option value="newest">Hàng mới nhất</Option>
         </Select>
       </Header>
-
+    
       <ProductGrid>
         {currentProducts.map((product) => (
-          <Link to = '/product/product-detail' style={{textDecoration:'none'}}>
-          <ProductItem key={product._id} product={product} />
+          <Link to={`/product/product-detail/${product._id}`} style={{ textDecoration: 'none' }} key={product._id}>
+            <ProductItem product={product} />
           </Link>
         ))}
       </ProductGrid>
 
-      {/* Pagination Controls */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '30px' }}>
         <Pagination
           current={currentPage}
           pageSize={productsPerPage}
-          // total={sortedProducts.length}
           total={products.length}
           onChange={handlePageChange}
           showSizeChanger={false}

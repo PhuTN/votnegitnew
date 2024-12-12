@@ -1,8 +1,11 @@
-// CheckoutComponent.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input, Button, Radio, Space, Card } from 'antd';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { createOrder } from '../../../redux/Slicer/orderSlice';
+import {jwtDecode} from 'jwt-decode';
+import { fetchUserById } from '../../../redux/Slicer/userSlice';
 
 const { TextArea } = Input;
 
@@ -52,34 +55,111 @@ const ProductDetails = styled.div`
 `;
 
 const PaymentComponent = ({ products }) => {
-  // Calculate total price for all products
-  const totalPrice = products.reduce((acc, product) => acc + product.price * product.quantity, 0);
+  const [orderNote, setOrderNote] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("Ship Cod"); // Thêm state quản lý phương thức thanh toán
+  const localCartItems1 = JSON.parse(localStorage.getItem("cartItems"));
+
+  function transformData(inputArray) {
+    return inputArray?.map((item) => ({
+      idproduct: item._id,
+      colorid: item.colorid,
+      idattributevalue: item.attributeId,
+      price: item.price,
+      number: item.quantity,
+    }));
+  }
+
+  const newCart = transformData(localCartItems1);
+  const totalPrice = products?.reduce((acc, product) => acc + product.price * product.quantity, 0);
+  localStorage.removeItem("previousURL2");
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const decodedToken = jwtDecode(token);
+        if (decodedToken?.userId) {
+          dispatch(fetchUserById(decodedToken.userId));
+        } else {
+          console.warn('Không tìm thấy userId trong token.');
+        }
+      } catch (error) {
+        console.error('Lỗi khi giải mã token:', error);
+      }
+    } else {
+      console.warn('Không tìm thấy token trong LocalStorage.');
+    }
+  }, [dispatch]);
+
+  const generateOrderId = () => {
+    const randomNumber = Math.floor(10000 + Math.random() * 90000);
+    return `O${randomNumber}`;
+  };
+
+  const handlePaymentMethodChange = (e) => {
+    setPaymentMethod(e.target.value);
+  };
+
+  const orderData = {
+    id: generateOrderId(),
+    name: user?.username,
+    iduser: user?._id,
+    phonumber: user?.phoneNumber,
+    address: user?.address,
+    email: user?.email,
+    description: orderNote,
+    status: "Chờ xử lý",
+    location: "",
+    products: newCart,
+    paymentMethod: paymentMethod, // Lấy giá trị từ Radio button
+    paymentStatus: "Chưa Thanh Toán",
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const result = await dispatch(createOrder(orderData)).unwrap();
+      console.log("Order created successfully:", result);
+      alert("Order created successfully!");
+    } catch (err) {
+      console.error("Error creating order:", err);
+      alert("Failed to create order.");
+    }
+  };
 
   return (
     <Container>
-      
-      {/* Customer Information Section */}
       <FormSection>
         <h2>Vợt nè</h2>
         <h3>Thông tin nhận hàng</h3>
         <Space direction="vertical" style={{ width: '100%' }}>
-          <Input placeholder="Họ và tên người nhận hàng" />
-          <Input placeholder="Số điện thoại" />
-          <Input placeholder="Địa chỉ" />
-          <Input placeholder="Email" />
-          <TextArea rows={2} placeholder="Ghi chú đơn hàng (tùy chọn)" />
+          <span>Tên: {user?.username}</span>
+          <span>Số điện thoại: {user?.phoneNumber}</span>
+          <span>Địa chỉ: {user?.address}</span>
+          <span>Email: {user?.email}</span>
+          <TextArea
+            rows={2}
+            placeholder="Ghi chú đơn hàng (tùy chọn)"
+            value={orderNote}
+            onChange={(e) => setOrderNote(e.target.value)}
+          />
         </Space>
-        
+
         <h3 style={{ marginTop: '20px' }}>Thanh toán</h3>
-        <Radio.Group defaultValue="COD" style={{ width: '100%' }}>
+        <Radio.Group
+          onChange={handlePaymentMethodChange}
+          value={paymentMethod}
+          style={{ width: '100%' }}
+        >
           <Space direction="vertical" style={{ width: '100%' }}>
-            <Radio value="COD">Thanh toán khi nhận hàng (COD)</Radio>
-            <Radio value="bank">Thanh toán qua ngân hàng</Radio>
+            <Radio value="Ship Cod">Thanh toán khi nhận hàng (COD)</Radio>
+            <Radio value="Chuyển Khoản">Thanh toán qua ngân hàng</Radio>
           </Space>
         </Radio.Group>
       </FormSection>
-      
-      {/* Order Summary Section */}
+
       <OrderSummarySection>
         <OrderSummary title={`Đơn hàng (${products.length} sản phẩm)`}>
           {products.map((product) => (
@@ -98,10 +178,12 @@ const PaymentComponent = ({ products }) => {
           ))}
           <h3>Tổng cộng: {totalPrice.toLocaleString('vi-VN')} ₫</h3>
           <Space style={{ width: '100%' }}>
-          <Link to = '/cart' style={{textDecoration:'none'}}>
-            <Button style={{ flex: 1 }}>Sửa giỏ hàng</Button>
+            <Link to="/cart" style={{ textDecoration: 'none' }}>
+              <Button style={{ flex: 1 }}>Sửa giỏ hàng</Button>
             </Link>
-            <Button type="primary" style={{ flex: 1 }}>ĐẶT HÀNG</Button>
+            <Button type="primary" style={{ flex: 1 }} onClick={handleSubmit}>
+              ĐẶT HÀNG
+            </Button>
           </Space>
           <p style={{ fontSize: '12px', marginTop: '10px' }}>
             - Giá trên chưa bao gồm phí vận chuyển. Phí vận chuyển sẽ được nhân viên báo khi xác nhận đơn hàng.
@@ -110,9 +192,9 @@ const PaymentComponent = ({ products }) => {
           </p>
         </OrderSummary>
       </OrderSummarySection>
-
-    </Container> 
+    </Container>
   );
 };
 
 export default PaymentComponent;
+

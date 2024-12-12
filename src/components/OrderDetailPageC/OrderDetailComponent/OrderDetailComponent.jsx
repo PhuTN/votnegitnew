@@ -99,6 +99,10 @@ const columns = [
 ];
 
 const OrderDetailComponent = ({ personalInfo, orderData }) => {
+
+  console.log(  "ORDER" )
+  console.log( orderData )
+  console.log(  "ORDER" )
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [returnReason, setReturnReason] = useState('');
 
@@ -122,11 +126,17 @@ const OrderDetailComponent = ({ personalInfo, orderData }) => {
       <InfoContainer>
         <Header>THÔNG TIN ĐƠN HÀNG</Header>
         <InfoSection>
-          <InfoItem><InfoLabel>Mã đơn hàng:</InfoLabel> {personalInfo.orderId}</InfoItem>
-          <InfoItem><InfoLabel>Họ tên:</InfoLabel> {personalInfo.fullName}</InfoItem>
-          <InfoItem><InfoLabel>Số ĐT:</InfoLabel> {personalInfo.phoneNumber}</InfoItem>
-          <InfoItem><InfoLabel>Địa chỉ:</InfoLabel> {personalInfo.address}</InfoItem>
-          <InfoItem><InfoLabel>Tình trạng:</InfoLabel> {personalInfo.status}</InfoItem>
+        <InfoItem><InfoLabel>Mã đơn hàng:</InfoLabel> {personalInfo.orderId}</InfoItem>
+  <InfoItem><InfoLabel>Họ tên:</InfoLabel> {personalInfo.fullName}</InfoItem>
+  <InfoItem><InfoLabel>Số ĐT:</InfoLabel> {personalInfo.phoneNumber}</InfoItem>
+  <InfoItem><InfoLabel>Email:</InfoLabel> {personalInfo.email}</InfoItem>
+  <InfoItem><InfoLabel>Địa chỉ:</InfoLabel> {personalInfo.address}</InfoItem>
+  <InfoItem><InfoLabel>Tình trạng:</InfoLabel> {personalInfo.status}</InfoItem>
+  <InfoItem><InfoLabel>Ngày đặt hàng:</InfoLabel> {personalInfo.dayorder}</InfoItem>
+  <InfoItem><InfoLabel>Mô tả:</InfoLabel> {personalInfo.decription}</InfoItem>
+  <InfoItem><InfoLabel>Địa điểm:</InfoLabel> {personalInfo.location}</InfoItem>
+  <InfoItem><InfoLabel>Phương thức thanh toán:</InfoLabel> {personalInfo.paymentMethod}</InfoItem>
+  <InfoItem><InfoLabel>Trạng thái thanh toán:</InfoLabel> {personalInfo.paymentStatus}</InfoItem>
           <ButtonContainer>
             <EditButton onClick={showModal}>Trả hàng</EditButton>
             <EditButton>Hủy</EditButton>
@@ -137,7 +147,7 @@ const OrderDetailComponent = ({ personalInfo, orderData }) => {
       <OrderContainer>
         <Header>SẢN PHẨM</Header>
         <InfoSection>
-          <OrderProduct />
+          <OrderProduct orderData2= {orderData} />
         </InfoSection>
       </OrderContainer>
 

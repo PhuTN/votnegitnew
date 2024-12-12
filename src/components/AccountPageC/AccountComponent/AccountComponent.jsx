@@ -67,14 +67,15 @@ const EditButton = styled(Button)`
 
 const columns = [
   {
-    title: 'Đơn hàng',
-    dataIndex: '_id',
-    key: 'orderNumber',
+    title: 'Mã Đơn Hàng',
+    dataIndex: 'id',
+    key: 'id',
   },
   {
-    title: 'Ngày',
-    dataIndex: 'date',
-    key: 'date',
+    title: 'Ngày Đặt',
+    dataIndex: 'dayorder',
+    key: 'dayorder',
+    render: (date) => new Date(date).toLocaleString(),
   },
   {
     title: 'Địa chỉ',
@@ -82,29 +83,79 @@ const columns = [
     key: 'address',
   },
   {
-    title: 'Giá tiền',
+    title: 'Tổng Giá',
     dataIndex: 'totalPrice',
-    key: 'price',
+    key: 'totalPrice',
+    render: (price) => `${price.toLocaleString()} VNĐ`,
   },
   {
-    title: 'Trạng thái',
-    dataIndex: 'state',
+    title: 'Trạng Thái',
+    dataIndex: 'status',
     key: 'status',
+  },
+  {
+    title: 'Số Điện Thoại',
+    dataIndex: 'phonumber',
+    key: 'phonumber',
+  },
+  {
+    title: 'Email',
+    dataIndex: 'email',
+    key: 'email',
+  },
+  {
+    title: 'Mô Tả',
+    dataIndex: 'description',
+    key: 'description',
+  },
+  {
+    title: 'Phương Thức Thanh Toán',
+    dataIndex: 'paymentMethod',
+    key: 'paymentMethod',
+  },
+  {
+    title: 'Trạng Thái Thanh Toán',
+    dataIndex: 'paymentStatus',
+    key: 'paymentStatus',
   },
 ];
 
 const AccountComponent = ({ personalInfo, orderData }) => {
   const navigate = useNavigate();
+console.log(orderData[0]?.dayorder)
+  const formattedOrderData = orderData.map((order) => {
+    const totalPrice = order.products.reduce((sum, product) => sum + product.price * product.number, 0);
+    return { 
+      id: order.id,
+      dayorder: order.dayorder,
+      address: order.address,
+      totalPrice,
+      status: order.status,
+      _id: order._id,
+      phonumber: order.phonumber,
+      email: order.email,
+      description: order.description,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
+    };
+    
+  });
 
   return (
     <AccountInfoWrapper>
       <InfoContainer>
         <Header>THÔNG TIN TÀI KHOẢN</Header>
         <InfoSection>
-          <InfoItem><InfoLabel>Họ tên:</InfoLabel> {personalInfo.name}</InfoItem>
-          <InfoItem><InfoLabel>Số ĐT:</InfoLabel> {personalInfo.phone}</InfoItem>
-          <InfoItem><InfoLabel>Địa chỉ:</InfoLabel> {personalInfo.address}</InfoItem>
-          <Link to='/account/account-info' style={{ textDecoration: 'none' }}>
+          <InfoItem>
+            <InfoLabel>Họ tên:</InfoLabel> {personalInfo?.username}
+          </InfoItem>
+          <InfoItem>
+            <InfoLabel>Số ĐT:</InfoLabel> {personalInfo?.phoneNumber}
+          </InfoItem>
+          <InfoItem>
+            <InfoLabel>Địa chỉ:</InfoLabel> {personalInfo?.address}
+          </InfoItem>
+          <Link to="/account/account-info" style={{ textDecoration: 'none' }}>
             <EditButton>SỬA THÔNG TIN CÁ NHÂN</EditButton>
           </Link>
         </InfoSection>
@@ -113,21 +164,14 @@ const AccountComponent = ({ personalInfo, orderData }) => {
       <OrderContainer>
         <Header>ĐƠN HÀNG CỦA BẠN</Header>
         <InfoSection>
-          <Table 
-            dataSource={orderData} 
-            columns={columns} 
-            pagination={{ pageSize: 7 }} 
-            locale={{ emptyText: 'Không có đơn hàng' }} 
+          <Table
+            dataSource={formattedOrderData}
+            columns={columns}
+            pagination={{ pageSize: 7 }}
+            rowKey={(record) => record._id}
+            locale={{ emptyText: 'Không có đơn hàng' }}
             onRow={(record) => ({
-              // onClick: () => {
-                
-              //   navigate(`/order/${record.orderNumber}`);
-              // },
-
-              onClick: () => {
-                
-                navigate(`/order-detail/${record._id}`);
-              },
+              onClick: () => navigate(`/order-detail/${record._id}`),
             })}
           />
         </InfoSection>

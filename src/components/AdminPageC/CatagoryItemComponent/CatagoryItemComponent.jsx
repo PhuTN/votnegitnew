@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
-import { Table, Row, Col, Select, Button, Modal, Input, Form, notification } from 'antd';
-import { EditOutlined, PlusOutlined } from '@ant-design/icons';
-import { attributes, values } from '../../../models/fake-data';
-import DecriptionEnterZone from '../DecriptionEnterZone/DecriptionEnterZone';
-
+import React, { useEffect, useState } from "react";
+import { Table, Row, Col, Select, Button, Modal, Input, Form, notification, message } from "antd";
+import { EditOutlined, PlusOutlined } from "@ant-design/icons";
+import { useDispatch, useSelector } from "react-redux";
+import { bulkUpdateAttributes, fetchAttributesByType } from "../../../redux/Slicer/attributeSlice";
 
 const { Option } = Select;
 
+
+const generateObjectId = () => {
+  const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0'); // 4 byte timestamp
+  const randomHex = () => Math.random().toString(16).substr(2, 8); // 8 hex chars
+  return (timestamp + randomHex() + randomHex()).substr(0, 24); // Đảm bảo đúng 24 ký tự
+};
 const CatagoryItemComponent = ({ title }) => {
+  const dispatch = useDispatch();
+  const reduxAttributes = useSelector((state) => state.attributes.attributes);
+
+  const [attributes, setAttributes] = useState([]);
   const [selectedAttributeId, setSelectedAttributeId] = useState(null);
   const [isAttributeModalVisible, setIsAttributeModalVisible] = useState(false);
   const [isValueModalVisible, setIsValueModalVisible] = useState(false);
@@ -15,15 +24,108 @@ const CatagoryItemComponent = ({ title }) => {
   const [isAdding, setIsAdding] = useState(false);
   const [form] = Form.useForm();
 
-  const [attributesData, setAttributesData] = useState(attributes);
-  const [valuesData, setValuesData] = useState(values);
+  useEffect(() => {
+    if (title) {
+      dispatch(fetchAttributesByType(title)); // Lấy dữ liệu từ Redux
+    }
+  }, [dispatch, title]);
+
+  useEffect(() => {
+    if (reduxAttributes) {
+      setAttributes(reduxAttributes); // Khởi tạo state nội bộ từ Redux
+    }
+  }, [reduxAttributes]);
+
+console.log("HELLO")
+console.log(attributes)
+console.log("HELLO")
+
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
+
+      if (isAdding) {
+        if (isAttributeModalVisible) {
+          // Thêm mới thuộc tính
+          const newAttribute = {
+            _id: generateObjectId(),
+            id: Math.random().toString(36).substring(7), // ID tạm
+            name: values.attribute,
+            active: values.status === "Hoạt động",
+            type: title,
+            values: [],
+          };
+          setAttributes([...attributes, newAttribute]);
+        } else if (isValueModalVisible && selectedAttributeId) {
+          // Thêm mới giá trị
+          setAttributes(
+            attributes.map((attr) =>
+              attr.id === selectedAttributeId
+                ? { 
+                    ...attr,
+                    values: [
+                      ...attr.values,
+                      {
+                        _id: generateObjectId(),
+                        id: Math.random().toString(36).substring(7), // ID tạm
+                        value: values.attribute,
+                        active: values.status === "Hoạt động",
+                      },
+                    ],
+                  }
+                : attr
+            )
+          );
+        }
+      } else {
+        if (isAttributeModalVisible) {
+          // Chỉnh sửa thuộc tính
+          setAttributes(
+            attributes.map((attr) =>
+              attr.id === editData.id
+                ? { ...attr, name: values.attribute, active: values.status === "Hoạt động" }
+                : attr
+            )
+          );
+        } else if (isValueModalVisible && selectedAttributeId) {
+          // Chỉnh sửa giá trị
+          setAttributes(
+            attributes.map((attr) =>
+              attr.id === selectedAttributeId
+                ? {
+                    ...attr,
+                    values: attr.values.map((val) =>
+                      val.id === editData.id
+                        ? { ...val, value: values.attribute, active: values.status === "Hoạt động" }
+                        : val
+                    ),
+                  }
+                : attr
+            )
+          );
+        }
+      }
+
+      notification.success({
+        message: isAdding ? "Thêm mới thành công" : "Cập nhật thành công",
+        description: isAdding ? "Dữ liệu đã được thêm thành công!" : "Dữ liệu đã được cập nhật thành công!",
+      });
+
+      setIsAttributeModalVisible(false);
+      setIsValueModalVisible(false);
+      setEditData(null);
+      form.resetFields();
+    } catch (error) {
+      console.error("Validation Failed:", error);
+    }
+  };
 
   const showEditModal = (record, isValue, isAdding = false) => {
     setIsAdding(isAdding);
     setEditData(isAdding ? null : record);
     form.setFieldsValue({
-      attribute: isAdding ? '' : record.value || record.attribute,
-      status: isAdding ? 'Hoạt động' : record.status,
+      attribute: isAdding ? "" : record.value || record.name,
+      status: isAdding ? "Hoạt động" : record.active ? "Hoạt động" : "Không hoạt động",
     });
     if (isValue) {
       setIsValueModalVisible(true);
@@ -32,95 +134,25 @@ const CatagoryItemComponent = ({ title }) => {
     }
   };
 
-  const handleSave = async () => {
-    try {
-      const values = await form.validateFields();
-
-      const isDuplicateAttribute = attributesData.some(
-        (item) => item.attribute === values.attribute && item.id !== (editData ? editData.id : null)
-      );
-
-      const isDuplicateValue = selectedAttributeId && valuesData[selectedAttributeId]
-        ? valuesData[selectedAttributeId].some(
-            (item) => item.value === values.attribute && item.id !== (editData ? editData.id : null)
-          )
-        : false;
-
-      if (isDuplicateAttribute || isDuplicateValue) {
-        notification.error({
-          message: 'Thêm mới thất bại',
-          description: 'Giá trị này đã tồn tại!',
-        });
-        return;
-      }
-
-      notification.success({
-        message: isAdding ? 'Thêm mới thành công' : 'Cập nhật thành công',
-        description: isAdding ? 'Dữ liệu đã được thêm thành công!' : 'Dữ liệu đã được cập nhật thành công!',
-      });
-
-      if (isAttributeModalVisible) {
-        if (isAdding) {
-          setAttributesData((prevAttributesData) => [
-            ...prevAttributesData,
-            { id: prevAttributesData.length + 1, attribute: values.attribute, status: values.status || 'Hoạt động' },
-          ]);
-        } else if (editData) {
-          setAttributesData((prevAttributesData) =>
-            prevAttributesData.map((item) =>
-              item.id === editData.id ? { ...item, attribute: values.attribute, status: values.status } : item
-            )
-          );
-        }
-      }
-
-      if (isValueModalVisible) {
-        if (isAdding) {
-          setValuesData((prevValuesData) => ({
-            ...prevValuesData,
-            [selectedAttributeId]: [
-              ...(prevValuesData[selectedAttributeId] || []),
-              { id: prevValuesData[selectedAttributeId]?.length + 1 || 1, value: values.attribute, status: values.status || 'Hoạt động' },
-            ],
-          }));
-        } else if (editData && selectedAttributeId) {
-          setValuesData((prevValuesData) => {
-            const updatedValues = prevValuesData[selectedAttributeId].map((item) =>
-              item.id === editData.id ? { ...item, value: values.attribute, status: values.status } : item
-            );
-            return { ...prevValuesData, [selectedAttributeId]: updatedValues };
-          });
-        }
-      }
-
-      setIsAttributeModalVisible(false);
-      setIsValueModalVisible(false);
-      setEditData(null);
-      form.resetFields();
-    } catch (error) {
-      console.error('Validation Failed:', error);
-    }
-  };
-
   const handleAttributeClick = (record) => {
     setSelectedAttributeId(record.id);
   };
 
   const attributeColumns = [
-    { title: 'ID', dataIndex: 'id', key: 'id' },
-    { title: 'Thuộc tính', dataIndex: 'attribute', key: 'attribute' },
+    { title: "ID", dataIndex: "id", key: "id" },
+    { title: "Thuộc tính", dataIndex: "name", key: "name" },
     {
-      title: 'Tình trạng',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Tình trạng",
+      dataIndex: "active",
+      key: "active",
       render: (text, record) => (
         <Select
-          defaultValue={record.status || 'Hoạt động'}
+          defaultValue={record.active ? "Hoạt động" : "Không hoạt động"}
           style={{ width: 180 }}
           onChange={(value) => {
-            setAttributesData((prevAttributesData) =>
-              prevAttributesData.map((item) =>
-                item.id === record.id ? { ...item, status: value } : item
+            setAttributes(
+              attributes.map((attr) =>
+                attr.id === record.id ? { ...attr, active: value === "Hoạt động" } : attr
               )
             );
           }}
@@ -131,37 +163,44 @@ const CatagoryItemComponent = ({ title }) => {
       ),
     },
     {
-      title: 'Hành động',
-      key: 'action',
+      title: "Hành động",
+      key: "action",
       render: (text, record) => (
         <Button
           type="primary"
           icon={<EditOutlined />}
           onClick={() => showEditModal(record, false)}
-          style={{ backgroundColor: '#2ecc71', borderColor: '#2ecc71', color: '#fff' }}
         />
       ),
     },
   ];
 
   const valueColumns = [
-    { title: 'ID', dataIndex: 'id', key: 'id' },
-    { title: 'Giá trị', dataIndex: 'value', key: 'value' },
+    { title: "ID", dataIndex: "id", key: "id" },
+    { title: "Giá trị", dataIndex: "value", key: "value" },
     {
-      title: 'Tình trạng',
-      dataIndex: 'status',
-      key: 'status',
+      title: "Tình trạng",
+      dataIndex: "active",
+      key: "active",
       render: (text, record) => (
         <Select
-          defaultValue={record.status || 'Hoạt động'}
+          defaultValue={record.active ? "Hoạt động" : "Không hoạt động"}
           style={{ width: 180 }}
           onChange={(value) => {
-            setValuesData((prevValuesData) => ({
-              ...prevValuesData,
-              [selectedAttributeId]: prevValuesData[selectedAttributeId].map((item) =>
-                item.id === record.id ? { ...item, status: value } : item
-              ),
-            }));
+            setAttributes(
+              attributes.map((attr) =>
+                attr.id === selectedAttributeId
+                  ? {
+                      ...attr,
+                      values: attr.values.map((val) =>
+                        val.id === record.id
+                          ? { ...val, active: value === "Hoạt động" }
+                          : val
+                      ),
+                    }
+                  : attr
+              )
+            );
           }}
         >
           <Option value="Hoạt động">Hoạt động</Option>
@@ -170,116 +209,141 @@ const CatagoryItemComponent = ({ title }) => {
       ),
     },
     {
-      title: 'Hành động',
-      key: 'action',
+      title: "Hành động",
+      key: "action",
       render: (text, record) => (
         <Button
           type="primary"
           icon={<EditOutlined />}
           onClick={() => showEditModal(record, true)}
-          style={{ backgroundColor: '#2ecc71', borderColor: '#2ecc71', color: '#fff' }}
         />
       ),
     },
   ];
 
+  const [isSaved, setIsSaved] = useState(false);
+
+const handleSave2 = async () => {
+    // Your save logic here
+    dispatch(bulkUpdateAttributes(attributes))
+    .unwrap()
+    .then((response) => {
+        console.log("Update successful:", response);
+        // After successful save, set isSaved to true
+        setIsSaved(true);
+    })
+    .catch((error) => {
+        console.error("Update failed:", error);
+    });
+    message.success("Changes saved!");
+};
+
+// Use an effect to trigger re-render when isSaved changes
+useEffect(() => {
+    if (isSaved) {
+        setIsSaved(false); // Reset isSaved state after re-render
+        // You can optionally refetch or reset anything here if needed
+    }
+}, [isSaved]);
   return (
     <div>
-      <div style={{ backgroundColor: '#ffffff', padding: '20px', borderRadius: '8px' ,border: '0.1px solid #dce1e3',boxShadow:'0px 0px 2px black'}}>
-        <h3 style={{ fontSize: '18px', marginBottom: '50px' }}>{title}</h3>
-        <Row gutter={16}>
-          <Col span={12}>
-            <Table
-            style={{ border: '0.1px solid #aadff0',borderRadius: '7px' }}
-              title={() => (
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Danh sách thuộc tính</span>
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => showEditModal(null, false, true)}
-                  >
-                    Thêm mới
-                  </Button>
-                </div>
-              )}
-              dataSource={attributesData}
-              columns={attributeColumns}
-              pagination={false}
-              rowKey="id"
-              bordered
-              onRow={(record) => ({
-                onClick: () => handleAttributeClick(record),
-              })}
-            />
-          </Col>
-          <Col span={12}>
-            <Table
-            style={{ border: '0.1px solid #aadff0',borderRadius: '7px' }}
-              title={() => (
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>
-                    {selectedAttributeId
-                      ? attributesData.find((attr) => attr.id === selectedAttributeId).attribute
-                      : 'Giá trị'}
-                  </span>
-                  <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => showEditModal(null, true, true)}
-                    disabled={!selectedAttributeId}
-                  >
-                    Thêm mới
-                  </Button>
-                </div>
-              )}
-              dataSource={selectedAttributeId ? valuesData[selectedAttributeId] : []}
-              columns={valueColumns}
-              pagination={false}
-              rowKey="id"
-              bordered
-            />
-          </Col>
-        </Row>
+    <Button  type="primary" style={{ width: "100px" }} onClick={() => handleSave2()}>
+            Save
+          </Button>
+      <Row gutter={16}>
+      
+  <Col span={12}>
+    <Row justify="space-between" align="middle">
+      <h3>Danh sách Thuộc tính</h3>
+      <Button
+        type="primary"
+        icon={<PlusOutlined />}
+        onClick={() => showEditModal(null, false, true)}
+      >
+        Thêm Thuộc tính
+      </Button>
+    </Row>
+    <Table
+      dataSource={attributes}
+      columns={attributeColumns}
+      rowKey="id"
+      onRow={(record) => ({
+        onClick: () => handleAttributeClick(record),
+      })}
+    />
+  </Col>
+  <Col span={12}>
+    <Row justify="space-between" align="middle">
+      <h3>
+        {selectedAttributeId
+          ? `Danh sách Giá trị của Thuộc tính: ${
+              attributes.find((attr) => attr.id === selectedAttributeId)?.name || ""
+            }`
+          : "Vui lòng chọn một Thuộc tính"}
+      </h3>
+      <Button
+        type="primary"
+        icon={<PlusOutlined />}
+        disabled={!selectedAttributeId}
+        onClick={() => showEditModal(null, true, true)}
+      >
+        Thêm Giá trị
+      </Button>
+    </Row>
+    <Table
+      dataSource={
+        attributes.find((attr) => attr.id === selectedAttributeId)?.values || []
+      }
+      columns={valueColumns}
+      rowKey="id"
+    />
+  </Col>
+</Row>
 
-        <Modal
-          title={isAdding ? 'Thêm mới' : 'Chỉnh sửa thuộc tính'}
-          visible={isAttributeModalVisible}
-          onCancel={() => setIsAttributeModalVisible(false)}
-          onOk={handleSave}
-        >
-          <Form form={form} layout="vertical">
-            <Form.Item
-              name="attribute"
-              label={isAdding ? 'Tên thuộc tính mới' : 'Thuộc tính'}
-              rules={[{ required: true, message: 'Vui lòng nhập giá trị!' }]}
-            >
-              <Input />
-            </Form.Item>
-          </Form>
-        </Modal>
-
-        <Modal
-          title={isAdding ? 'Thêm mới giá trị' : 'Chỉnh sửa giá trị'}
-          visible={isValueModalVisible}
-          onCancel={() => setIsValueModalVisible(false)}
-          onOk={handleSave}
-        >
-          <Form form={form} layout="vertical">
-            <Form.Item
-              name="attribute"
-              label={isAdding ? 'Tên giá trị mới' : 'Giá trị'}
-              rules={[{ required: true, message: 'Vui lòng nhập giá trị!' }]}
-            >
-              <Input />
-            </Form.Item>
-            
-          </Form>
-        </Modal>
-      </div>
-      <div style={{ marginTop: '30px' ,border: '0.1px solid #dce1e3',borderRadius: '8px' ,boxShadow:'0px 0px 2px black'}}>
-        <DecriptionEnterZone></DecriptionEnterZone>
-      </div>
+      <Modal
+        visible={isAttributeModalVisible}
+        title={isAdding ? "Thêm thuộc tính" : "Chỉnh sửa thuộc tính"}
+        onCancel={() => setIsAttributeModalVisible(false)}
+        onOk={handleSave}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="attribute"
+            label="Thuộc tính"
+            rules={[{ required: true, message: "Vui lòng nhập thuộc tính!" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item name="status" label="Tình trạng">
+            <Select>
+              <Option value="Hoạt động">Hoạt động</Option>
+              <Option value="Không hoạt động">Không hoạt động</Option>
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Modal
+        visible={isValueModalVisible}
+        title={isAdding ? "Thêm giá trị" : "Chỉnh sửa giá trị"}
+        onCancel={() => setIsValueModalVisible(false)}
+        onOk={handleSave}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="attribute"
+            label="Giá trị"
+            rules={[{ required: true, message: "Vui lòng nhập giá trị!" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item name="status" label="Tình trạng">
+            <Select>
+              <Option value="Hoạt động">Hoạt động</Option>
+              <Option value="Không hoạt động">Không hoạt động</Option>
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

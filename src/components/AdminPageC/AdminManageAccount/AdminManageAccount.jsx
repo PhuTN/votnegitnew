@@ -1,112 +1,42 @@
-import React, { useState, useContext } from 'react'; 
-import { Modal, Table, Button, Select, Input, Row, Col, Tooltip, Form, message } from 'antd'; 
+import React, { useEffect, useState } from 'react';
+import { Modal, Table, Button, Select, Input, Row, Col, Form, message } from 'antd';
 import { EditOutlined, UndoOutlined } from '@ant-design/icons'; // Importing necessary icons
-import { AppContexts } from '../../../contexts/AppContexts';
-import AdminTableComponent from '../AdminTableComponent/AdminTableComponent'; 
+import AdminTableComponent from '../AdminTableComponent/AdminTableComponent';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchAllUsers, updateAllUsers } from '../../../redux/Slicer/userSlice'; // addUser action to handle new user addition
 
-const AdminManageAccount = () => { 
-  const {users} = useContext(AppContexts)
+const AdminManageAccount = () => {
+  const dispatch = useDispatch();
+  const { users, status, error } = useSelector((state) => state.user);
 
-    const orderCategories = [
-        { label: 'ID', value: 'id' },
-        { label: 'Loại', value: 'type' },
-        { label: 'Tên tài khoản', value: 'username' },
-        { label: 'Tên người dùng', value: 'name' },
-        { label: 'Số điện thoại', value: 'phoneNumber' },
-        { label: 'Địa chỉ', value: 'address' },
-        { label: 'Email', value: 'email' },
-        { label: 'Giới Tính', value: 'gender' },
-        { label: 'Ngày Sinh', value: 'birthDate' },
-        { label: 'Hoạt động', value: 'status' },
-    ];
-    
-    const dataOrders = [
-        {
-            id: 1,
-            type: 'Khách hàng', // Loại khách hàng
-            username: 'nguyenvana',
-            phoneNumber: '0901234567',
-            address: '123 Đường A, Quận B',
-            email: 'nguyenvana@example.com',
-            gender: 'male',
-            birthDate: '1990-01-01',
-            status: 'active', // Hoạt động
-        },
-        {
-            id: 2,
-            type: 'Nhân viên bán hàng', // Nhân viên bán hàng
-            username: 'tranthib',
-            phoneNumber: '0912345678',
-            address: '456 Đường C, Quận D',
-            email: 'tranthib@example.com',
-            gender: 'female',
-            birthDate: '1985-05-10',
-            status: 'inactive', // Không hoạt động
-        },
-        {
-            id: 3,
-            type: 'Nhân viên kho', // Nhân viên kho
-            username: 'leminhc',
-            phoneNumber: '0923456789',
-            address: '789 Đường E, Quận F',
-            email: 'leminhc@example.com',
-            gender: 'male',
-            birthDate: '1992-07-20',
-            status: 'active', // Hoạt động
-        },
-        // Thêm các đối tượng khác nếu cần thiết
-    ];
-    
+  useEffect(() => {
+    dispatch(fetchAllUsers());
+  }, [dispatch]);
 
+  const orderCategories = [
+    { label: 'ID', value: 'id' },
+    { label: 'Loại', value: 'type' },
+    { label: 'Tên tài khoản', value: 'username' },
+    { label: 'Số điện thoại', value: 'phoneNumber' },
+    { label: 'Địa chỉ', value: 'address' },
+    { label: 'Email', value: 'email' },
+    { label: 'Giới Tính', value: 'gender' },
+    { label: 'Ngày Sinh', value: 'birthDate' },
+    { label: 'Hoạt động', value: 'status' },
+  ];
 
+  const [filteredData, setFilteredData] = useState([]);
+  useEffect(() => {
+    setFilteredData(users);
+  }, [users]);
 
-  const [isModalVisible, setIsModalVisible] = useState(false); 
-  const [selectedOrder, setSelectedOrder] = useState(null); 
-  // const [filteredData, setFilteredData] = useState(dataOrders); 
-  const [filteredData, setFilteredData] = useState(users); 
-  const [selectedCategory, setSelectedCategory] = useState(orderCategories[0].value); 
-  const [isUpdateShippingModalVisible, setIsUpdateShippingModalVisible] = useState(false);
-  const [isReturnReasonModalVisible, setIsReturnReasonModalVisible] = useState(false);
-  const [currentOrderId, setCurrentOrderId] = useState(null);
-
-  // Separate form instances for each modal to avoid conflicts
-  const [shippingForm] = Form.useForm();
-  const [returnReasonForm] = Form.useForm();
-
-  // Handler to open Update Shipping Progress Modal
-  const handleUpdateShipping = (orderId) => {
-    setCurrentOrderId(orderId);
-    const order = filteredData.find((order) => order.orderId === orderId);
-    setSelectedOrder(order);
-    // Set initial value for the form based on current shipping status
-    shippingForm.setFieldsValue({ shippingStatus: order.shippingStatus || '' });
-    setIsUpdateShippingModalVisible(true);
-  };
-
-  // Handler to open Return Reason Modal
-  const handleReturnReason = (orderId) => {
-    setCurrentOrderId(orderId);
-    const order = filteredData.find((order) => order.orderId === orderId);
-    setSelectedOrder(order);
-    // Set initial value for the form based on existing return reason
-    returnReasonForm.setFieldsValue({ returnReason: order.returnReason || '' });
-    setIsReturnReasonModalVisible(true);
-  };
-
-  const handleViewProducts = (orderId) => { 
-    const order = filteredData.find((order) => order.orderId === orderId); 
-    setSelectedOrder(order); 
-    setIsModalVisible(true); 
-  }; 
-
-  const handleModalClose = () => { 
-    setIsModalVisible(false); 
-    setSelectedOrder(null); 
-  }; 
+  const [selectedCategory, setSelectedCategory] = useState(orderCategories[0].value);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [form] = Form.useForm(); // Form instance for handling new user data
 
   const handleCategoryChange = (value) => { 
     setSelectedCategory(value); 
-  }; 
+  };
 
   const handleSearch = (searchText) => { 
     const filtered = users.filter((item) => { 
@@ -114,71 +44,30 @@ const AdminManageAccount = () => {
       return item[columnKey] && item[columnKey].toString().toLowerCase().includes(searchText.toLowerCase()); 
     }); 
     setFilteredData(filtered); 
-  }; 
-
- 
-
-  // Submit handler for Update Shipping Progress
-  const handleUpdateShippingSubmit = () => {
-    shippingForm.validateFields()
-      .then(values => {
-        // Implement the logic to update shipping progress
-        console.log('Update Shipping Progress for Order ID:', currentOrderId, values);
-        // Update the orderStatus based on form input
-        handleStatusChange(currentOrderId, values.shippingStatus);
-        setIsUpdateShippingModalVisible(false);
-        shippingForm.resetFields();
-      })
-      .catch(info => {
-        console.log('Validate Failed:', info);
-      });
   };
 
-  // Submit handler for Return Reason
-  const handleReturnReasonSubmit = () => {
-    returnReasonForm.validateFields()
-      .then(values => {
-        // Implement the logic to handle return reasons
-        console.log('Return Reason for Order ID:', currentOrderId, values);
-        // Update the order with return reason
-        const updatedOrders = filteredData.map((order) => { 
-          if (order.orderId === currentOrderId) { 
-            return { ...order, returnReason: values.returnReason };
-          } 
-          return order; 
-        }); 
-        setFilteredData(updatedOrders); 
-        message.success('Return reason recorded successfully');
-        setIsReturnReasonModalVisible(false);
-        returnReasonForm.resetFields();
-      })
-      .catch(info => {
-        console.log('Validate Failed:', info);
-      });
+  const handleStatusChange = (userId, status) => {
+    const updatedStatus = status === 'Hoạt động' ? true : false;
+    const updatedUsers = filteredData.map((user) => {
+      if (user.id === userId) {
+        return { ...user, isActive: updatedStatus };
+      }
+      return user;
+    });
+    setFilteredData(updatedUsers);
   };
 
- 
-
-  
-
-  // Define columnsOrder inside the component to access handleStatusChange and action handlers
   const columnsOrder = [
-    { title: 'ID', dataIndex: '_id', key: '_id', align: 'left' },
-    {
-      title: 'Loại',
-      dataIndex: 'role',
-      key: 'role',
+    { title: 'ID', dataIndex: 'id', key: 'id', align: 'left' },
+    { 
+      title: 'Loại', 
+      dataIndex: 'role', 
+      key: 'role', 
       align: 'left',
-      filters: [
-        { text: 'Customer', value: 'Customer' },
-        { text: 'Nhân viên bán hàng', value: 'Nhân viên bán hàng' },
-        { text: 'Nhân viên kho', value: 'Nhân viên kho' },
-      ],
-      onFilter: (value, record) => record.role === value,
+      render: (role) => role === 'Admin' ? 'Quản trị viên' : 'Khách hàng',
     },
     { title: 'Tên tài khoản', dataIndex: 'username', key: 'username', align: 'left' },
-    { title: 'Tên người dùng', dataIndex: 'name', key: 'name', align: 'left' },
-    { title: 'Số điện thoại', dataIndex: 'phone', key: 'phone', align: 'left' },
+    { title: 'Số điện thoại', dataIndex: 'phoneNumber', key: 'phoneNumber', align: 'left' },
     { title: 'Địa chỉ', dataIndex: 'address', key: 'address', align: 'left' },
     { title: 'Email', dataIndex: 'email', key: 'email', align: 'left' },
     {
@@ -186,28 +75,23 @@ const AdminManageAccount = () => {
       dataIndex: 'gender',
       key: 'gender',
       align: 'left',
-      render: (gender) => (gender === 'male' ? 'Nam' : ''),
-      filters: [
-        { text: 'Nam', value: 'male' },
-        { text: 'Nữ', value: 'female' },
-      ],
-      onFilter: (value, record) => record.gender === value,
+      render: (gender) => (gender === 'Male' ? 'Nam' : 'Nữ'),
     },
     {
       title: 'Ngày Sinh',
-      dataIndex: 'birthDate',
-      key: 'birthDate',
+      dataIndex: 'dateOfBirth',
+      key: 'dateOfBirth',
       align: 'left',
       render: (date) => new Date(date).toLocaleDateString(),
     },
     {
       title: 'Hoạt động',
-      dataIndex: 'status',
-      key: 'status',
+      dataIndex: 'isActive',
+      key: 'isActive',
       align: 'left',
-      render: (status, record) => (
+      render: (isActive, record) => (
         <Select
-          defaultValue={status === 'active' ? 'Hoạt động' : 'Không hoạt động'}
+          defaultValue={isActive ? 'Hoạt động' : 'Không hoạt động'}
           style={{ width: 120 }}
           onChange={(value) => handleStatusChange(record.id, value)}
         >
@@ -215,65 +99,120 @@ const AdminManageAccount = () => {
           <Select.Option value="inactive">Không hoạt động</Select.Option>
         </Select>
       ),
-      filters: [
-        { text: 'Hoạt động', value: 'active' },
-        { text: 'Không hoạt động', value: 'inactive' },
-      ],
-      onFilter: (value, record) => record.status === value,
     },
   ];
-  
-  // Cập nhật hàm handleStatusChange để cập nhật trạng thái trong state
-  const handleStatusChange = (orderId, status) => {
-    const updatedStatus = status === 'Hoạt động' ? 'active' : 'inactive';
-    const updatedOrders = filteredData.map((order) => {
-      if (order.id === orderId) {
-        return { ...order, status: updatedStatus };
-      }
-      return order;
-    });
-    setFilteredData(updatedOrders);
-    
+
+  const handleSave = async () => {
+    try {
+      await dispatch(updateAllUsers(filteredData)); 
+      message.success("Changes saved!");
+    } catch (error) {
+      console.error("Failed to update users:", error);
+    }
   };
-  
 
+  // Modal logic for adding a user
+  const handleAddUser = async (values) => {
+    // try {
+    //   await dispatch(addUser(values)); // Assuming addUser handles adding the user in Redux
+    //   setIsModalVisible(false);
+    //   message.success('User added successfully!');
+    //   form.resetFields();
+    // } catch (error) {
+    //   console.error("Failed to add user:", error);
+    //   message.error('Failed to add user');
+    // }
+  };
 
-  return ( 
-    <div style={{ marginTop: '50px' }}> 
-      <Row justify="end" style={{ marginBottom: '-100px', marginRight: '30px' }}> 
-        <Col> 
+  return (
+    <div style={{ marginTop: '50px' }}>
+      <Row justify="end" style={{ marginBottom: '-100px', marginRight: '30px' }}>
+        <Col>
           <div style={{ 
             backgroundColor: 'white', 
             padding: '10px', 
             borderRadius: '8px', 
             display: 'flex', 
-            gap: '8px', 
-          }}> 
-            <Select 
-              defaultValue={orderCategories[0].value} 
-              style={{ width: 150 }} 
-              options={orderCategories} 
-              onChange={handleCategoryChange} 
-            /> 
-            <Input.Search 
-              placeholder="Tìm kiếm..." 
-              allowClear 
-              onSearch={handleSearch} 
-              style={{ width: 200 }} 
-            /> 
-          </div> 
-        </Col> 
-      </Row> 
+            gap: '8px',
+          }}>
+            <Select
+              defaultValue={orderCategories[0].value}
+              style={{ width: 150 }}
+              options={orderCategories}
+              onChange={handleCategoryChange}
+            />
+            <Input.Search
+              placeholder="Tìm kiếm..."
+              allowClear
+              onSearch={handleSearch}
+              style={{ width: 200 }}
+            />
+            <Button type="primary" style={{ width: "100px" }} onClick={handleSave}>Save</Button>
+            <Button 
+              type="primary" 
+              style={{ width: "100px", backgroundColor: "green" }} 
+              onClick={() => setIsModalVisible(true)}
+            >
+              Add
+            </Button>
+          </div>
+        </Col>
+      </Row>
 
       <AdminTableComponent 
         title="Tài khoản" 
         columns={columnsOrder} 
         data={filteredData} 
-      /> 
+      />
 
-      
-    </div> 
-  ); 
-}; 
+      {/* Add User Modal */}
+      <Modal
+        title="Add New User"
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+      >
+        <Form form={form} onFinish={handleAddUser}>
+          <Form.Item name="username" label="Tên tài khoản" rules={[{ required: true, message: 'Vui lòng nhập tên tài khoản' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}>
+            <Input.Password />
+          </Form.Item>
+          <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Vui lòng nhập email' }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="phoneNumber" label="Số điện thoại">
+            <Input />
+          </Form.Item>
+          <Form.Item name="address" label="Địa chỉ">
+            <Input />
+          </Form.Item>
+          <Form.Item name="gender" label="Giới tính">
+            <Select>
+              <Select.Option value="Male">Nam</Select.Option>
+              <Select.Option value="Female">Nữ</Select.Option>
+              <Select.Option value="Other">Khác</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="dateOfBirth" label="Ngày sinh">
+            <Input type="date" />
+          </Form.Item>
+          <Form.Item name="role" label="Vai trò">
+            <Select defaultValue="Customer">
+              <Select.Option value="Admin">Quản trị viên</Select.Option>
+              <Select.Option value="Customer">Khách hàng</Select.Option>
+              <Select.Option value="Seller">Người bán</Select.Option>
+              <Select.Option value="WarehouseStaff">Nhân viên kho</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit">Thêm</Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+    </div>
+  );
+};
 
 export default AdminManageAccount;

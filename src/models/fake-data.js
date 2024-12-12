@@ -4,7 +4,6 @@ import { EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 
 
 
-
 export const columnsProduct = [
   {
       title: 'ID',
@@ -17,11 +16,7 @@ export const columnsProduct = [
       render: (text) => <span style={{ color: '#000' }}>{text}</span>,
       align: 'left',
   },
-  {
-      title: 'Loại sản phẩm',
-      dataIndex: 'category',
-      align: 'left',
-  },
+  
   {
       title: 'Thương hiệu',
       dataIndex: 'brand',

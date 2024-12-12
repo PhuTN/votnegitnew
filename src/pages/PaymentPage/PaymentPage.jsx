@@ -19,9 +19,16 @@ const PaymentPage = () => {
     }
   ];
 
+
+  
+
+
+
+  const localCartItems = localStorage.getItem("cartItems");
+ const product2 = JSON.parse(localCartItems);
   return (
     <div>
-        <PaymentComponent products={products} />
+        <PaymentComponent products={product2} />
     </div>
   )
 }

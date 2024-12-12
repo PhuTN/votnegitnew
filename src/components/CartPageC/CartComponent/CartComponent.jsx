@@ -1,13 +1,79 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { deleteI, ItemName, CartContainer, CartHeader, CartItemContainer, ItemPrice, TotalContainer, CheckoutButtonStyled, ItemDetails } from './style';
 import { Image, InputNumber } from 'antd';
 import './style.css'
 import Bag from '../../../images/Bag.svg';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-const CartComponent = ({ initialCartItems }) => {
+const CartComponent = () => {
+
+
+
+
+
+    const location = useLocation();
+
+    localStorage.setItem("previousURL2", location.pathname);
+
+
+
+    const cart = localStorage.getItem("cart");
+    let parsedCart ={}
+    if (cart) {
+       
+        parsedCart = JSON.parse(cart); // Chuyển chuỗi JSON thành đối tượng
+        
+      } else {
+        console.log("Giỏ hàng trống");
+      }
+
+      const navigate = useNavigate(); // Tạo hàm điều hướng
+      const handleProductClick = (id) => {
+        navigate(`/product-detail/${id}`); // Điều hướng tới trang chi tiết sản phẩm
+    };
+     
+
+const extractProductDetails = (products) => {
+    let counter = 1; // Bắt đầu từ 1
+      return products?.map((product) => {
+          const { idproduct, colorid, idattributevalue, number } = product;
+          const color = idproduct.colors.find((c) => c.id === colorid);
+
+          return {
+              _id: idproduct._id,
+              id: counter++,
+              name: idproduct.name,
+              quantity: number,
+              price: color ? color.price : null,
+              image: color && color.images?.length > 0 ? color.images[0] : null,
+              attributeValue: idattributevalue ? idattributevalue.value : null,
+              attributeId: idattributevalue ? idattributevalue._id : null,
+              colorid: colorid,
+              colorName: color?.colorName,
+          
+
+          };
+      });
+  };
+
+  const result = extractProductDetails(parsedCart?.products);
+
+  const initialCartItems = () => {
+    const localCartItems = localStorage.getItem("cartItems");
+    if (localCartItems) {
+        return JSON.parse(localCartItems);
+    }
+    localStorage.setItem("cartItems", JSON.stringify(result || []));
+    return result || [];
+};
+
+  
+
     const [cartItems, setCartItems] = useState(initialCartItems);
 
+    useEffect(() => {
+        localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    }, [cartItems]);
     const updateQuantity = (id, value) => {
         const newCartItems = cartItems.map(item => 
             item.id === id ? { ...item, quantity: value } : item
@@ -24,6 +90,23 @@ const CartComponent = ({ initialCartItems }) => {
         setCartItems(newCartItems);
     };
 
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const newCartItems = JSON.parse(localStorage.getItem("cartItems"));
+            setCartItems(newCartItems || []);
+          
+        };
+    
+        // Lắng nghe sự thay đổi trong localStorage
+        window.addEventListener("storage", handleStorageChange);
+    
+        // Dọn dẹp khi component bị hủy
+        return () => {
+            window.removeEventListener("storage", handleStorageChange);
+        };
+    }, []);
+   
+
     return (
         <CartContainer>
             <CartHeader>GIỎ HÀNG </CartHeader>
@@ -38,12 +121,20 @@ const CartComponent = ({ initialCartItems }) => {
                 </div>
             ) : (
                 cartItems.map(item => (
+                    
+
+                   
+                        
                     <CartItemContainer key={item.id}>
+                    <Link to={`/product/product-detail/${item._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                         <img src={item.image} alt={item.name} width={'50px'} />
+                        </Link>
                         <ItemDetails>
+                        <Link to={`/product/product-detail/${item._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                             <ItemName>
-                                {item.name}
+                                {item.name} ,{item.colorName} ,{item.attributeValue}
                             </ItemName>
+                            </Link>
                             <InputNumber 
                                 min={1} 
                                 defaultValue={item.quantity} 
@@ -58,6 +149,7 @@ const CartComponent = ({ initialCartItems }) => {
                             <ItemPrice>{(item.price * item.quantity).toLocaleString()} đ</ItemPrice>
                         </ItemDetails>
                     </CartItemContainer>
+            
                 ))
             )}
             {cartItems.length > 0 && (

@@ -13,63 +13,75 @@ import ProductPage from "../pages/ProductPage/ProductPage";
 import SigninPage from "../pages/SigninPage/SigninPage";
 export const routes = [
     {
-        path: '/',
-        page: HomePage,
-        isShowHeader: true
+      path: '/',
+      page: HomePage,
+      isShowHeader: true,
+      isProtected: false, // Không cần đăng nhập
     },
     {
-        path: '/product',
-        page:ProductPage,
-        isShowHeader: true
+      path: '/product/:type',
+      page: ProductPage,
+      isShowHeader: true,
+      isProtected: false,
     },
     {
-        path: '/product/product-detail/:productName',
-        page:ProductDetailPage,
-        isShowHeader: true
+      path: '/product/product-detail/:productName',
+      page: ProductDetailPage,
+      isShowHeader: true,
+      isProtected: false,
     },
     {
-        path: '/cart',
-        page:CartPage,
-        isShowHeader: true
+      path: '/cart',
+      page: CartPage,
+      isShowHeader: true,
+      isProtected: true, // Cần đăng nhập
     },
     {
-        path: '/account',
-        page: AccountPage,
-        isShowHeader: true
+      path: '/account',
+      page: AccountPage,
+      isShowHeader: true,
+      isProtected: true,
     },
     {
-        path: '/login',
-        page: LoginPage,
-        isShowHeader: true
+      path: '/login',
+      page: LoginPage,
+      isShowHeader: true,
+      isProtected: false,
     },
     {
-        path: '/signin',
-        page: SigninPage,
-        isShowHeader: true
+      path: '/signin',
+      page: SigninPage,
+      isShowHeader: true,
+      isProtected: false,
     },
     {
-        path: '/account/account-info',
-        page: AccountInfoPage,
-        isShowHeader: true
+      path: '/account/account-info',
+      page: AccountInfoPage,
+      isShowHeader: true,
+      isProtected: true,
     },
     {
-        path: '/order-detail/:orderID',
-        page: OrderDetailPage,
-        isShowHeader: true
-    },
-    
-    {
-        path: '/order-detail/payment',
-        page: PaymentPage,
-        isShowHeader: false
+      path: '/order-detail/:orderID',
+      page: OrderDetailPage,
+      isShowHeader: true,
+      isProtected: true,
     },
     {
-        path: '/admin',
-        page: AdminPage,
-        isShowHeader: false
+      path: '/order-detail/payment',
+      page: PaymentPage,
+      isShowHeader: false,
+      isProtected: true,
     },
     {
-        path: '*',
-        page: NotFoundPage
-    }
-]
+      path: '/admin',
+      page: AdminPage,
+      isShowHeader: false,
+      isProtected: true,
+    },
+    {
+      path: '*',
+      page: NotFoundPage,
+      isProtected: false,
+    },
+  ];
+  

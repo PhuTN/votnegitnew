@@ -80,7 +80,7 @@ const CheckoutButtonStyled = styled(Button)`
 
 const ItemName = styled.p`
   text-align: left;
-  width: 200px;
+  width: 500px;
   line-height: 1.5;
   max-height: 3em;
   overflow: hidden;

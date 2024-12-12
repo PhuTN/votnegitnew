@@ -40,7 +40,7 @@ const itemMenu = [
       { label: "Váy", key: "vayp", icon: <GiftOutlined />, component: AdminProductComponent },
       { label: "Quần", key: "quanp", icon: <GiftOutlined />, component: AdminProductComponent },
       { label: "Túi vợt", key: "tui_votp", icon: <GiftOutlined />, component: AdminProductComponent },
-      { label: "Ba lô", key: "ba_lop", icon: <GiftOutlined />, component: AdminProductComponent },
+      { label: "Balo", key: "ba_lop", icon: <GiftOutlined />, component: AdminProductComponent },
       { label: "Phụ kiện", key: "phu_kienp", icon: <GiftOutlined />, component: AdminProductComponent }
     ]
   },
@@ -55,7 +55,7 @@ const itemMenu = [
       { label: "Váy", key: "vay", icon: <ProductOutlined />, component: CatagoryItemComponent },
       { label: "Quần", key: "quan", icon: <ProductOutlined />, component: CatagoryItemComponent },
       { label: "Túi vợt", key: "tui_vot", icon: <ProductOutlined />, component: CatagoryItemComponent },
-      { label: "Ba lô", key: "ba_lo", icon: <ProductOutlined />, component: CatagoryItemComponent },
+      { label: "Balo", key: "ba_lo", icon: <ProductOutlined />, component: CatagoryItemComponent },
       { label: "Phụ kiện", key: "phu_kien", icon: <ProductOutlined />, component: CatagoryItemComponent }
     ]
   },
@@ -163,7 +163,7 @@ const AdminPage = () => {
         {/* Main Content */}
         <div style={{ flex: 1, padding: "20px" }}>
           {selectedRow ? (
-            <AdminProductDetail></AdminProductDetail>
+            <AdminProductDetail selectedRow={selectedRow}></AdminProductDetail>
           ) : (
             renderComponent(selectedKey, handleRowSelect)
           )}

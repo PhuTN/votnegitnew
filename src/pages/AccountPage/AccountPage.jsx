@@ -2,49 +2,44 @@ import React, {useEffect, useState} from 'react'
 import AccountComponent from '../../components/AccountPageC/AccountComponent/AccountComponent'
 import { AppContexts } from '../../contexts/AppContexts';
 import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchUserById } from '../../redux/Slicer/userSlice';
+import { jwtDecode } from 'jwt-decode';
+import { fetchOrdersByUserId } from '../../redux/Slicer/orderSlice';
 const AccountPage = () => {
 
-      const userID = localStorage.getItem("id")
-      const [userOrders, setUserOrders] = useState([])
-      const [userInfo, setUserInfo] = useState([])
+      
 
-      useEffect(() => {
-        axios.get(`http://localhost:8081/v1/api/getOrder/` + userID)
-        // axios.get("http://localhost:8081/v1/api/getOrder/671cf797038362a49b838a57")
-            .then(res => {
-              setUserOrders(res.data)
-                // let date = new Date(res.data.ngaySinh);
-                // let tempMonth
-                // if (((parseInt(date.getMonth())) + 1) < 10) {
-                //     tempMonth = "0" + (date.getMonth() + 1);
-                // }
-                // setNgaySinh(date.getFullYear() + "-" + tempMonth + "-" + date.getDate())
+  const token = localStorage.getItem("token"); // Lấy token từ LocalStorage
+  let decodedToken ={}
+  if (token) {
+    decodedToken = jwtDecode(token);
+   // console.log("Thông tin giải mã token:",decodedToken );
+  } else {
+    console.log("Không có token để giải mã.");
+  }
 
-            })
-            .catch(err => {
-                console.log(err)
-            })
+  const dispatch = useDispatch();
+  const { user, status, error } = useSelector((state) => state.user);
 
+  useEffect(() => {
+    dispatch(fetchUserById(decodedToken?.userId    )); // Lấy thông tin người dùng theo ID
+  }, [dispatch, decodedToken?.userId]);
+ 
+  const orders = useSelector((state) => state.orders.orders); // Lấy danh sách đơn hàng từ store
 
-    }, [userID]);
-
-    useEffect(() => {
-      axios.get(`http://localhost:8081/v1/api/getUser/` + userID)
-          .then(res => {
-            setUserInfo(res.data)
-          })
-          .catch(err => {
-              console.log(err)
-          })
-
-
-  }, [userID]);
-
-
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchOrdersByUserId(decodedToken?.userId)); // Gửi action để lấy dữ liệu orders
+    }
+  }, [status, decodedToken?.userId, dispatch]);
+  console.log("hello")
+  console.log(decodedToken)
+  console.log("hello")
   return (
     <div style={{width: '1200px', 
                 margin: '30px auto 50px auto', }}>
-        <AccountComponent personalInfo={userInfo} orderData={userOrders} />
+        <AccountComponent personalInfo={user} orderData={orders} />
     </div>
   )
 }

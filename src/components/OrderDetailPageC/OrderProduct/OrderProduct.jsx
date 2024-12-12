@@ -4,31 +4,19 @@ import { Image } from 'antd';
 import './style.css';
 import Bag from '../../../images/Bag.svg';
 
-const OrderProduct = () => {
-    const [cartItems, setCartItems] = useState([
-        {
-            id: 1,
-            name: 'Vợt Cầu Lông Lining Turbo Charging Marshal',
-            price: 529000,
-            quantity: 2,
-            image: 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-vnb-v200-xanh-2.webp'
-        },
-        {
-            id: 2,
-            name: 'Vợt cầu lông VNB V200 Xanh chính hãng',
-            price: 529000,
-            quantity: 3,
-            image: 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-vnb-v200-xanh-2.webp'
-        }
-    ]);
+const OrderProduct = (orderData2) => {
+    console.log(  "ORDER" )
+    console.log( orderData2.orderData2    )
+    console.log(  "ORDER" )
+   
 
     const calculateTotal = () => {
-        return cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
+        return orderData2.orderData2.reduce((total, item) => total + item.price * item.quantity, 0);
     };
 
     return (
         <CartContainer>
-            {cartItems.length === 0 ? (
+            {orderData2.orderData2?.length === 0 ? (
                 <div style={{ textAlign: 'center', margin: '20px 0', color: '#888' }}>
                     <Image 
                         width={100} 
@@ -38,11 +26,11 @@ const OrderProduct = () => {
                     Chưa có sản phẩm trong giỏ hàng
                 </div>
             ) : (
-                cartItems.map(item => (
+                orderData2.orderData2?.map(item => (
                     <CartItemContainer key={item.id}>
                         <img src={item.image} alt={item.name} width={'50px'} />
                         <ItemDetails>
-                            <ItemName>{item.name}</ItemName>
+                            <ItemName>{item.name}, {item.colorName}, {item.attributeValue}</ItemName>
                             <div style={{ marginRight: '55px' }}>Số lượng: {item.quantity}</div>
                         </ItemDetails>
                         <ItemDetails>
@@ -51,7 +39,7 @@ const OrderProduct = () => {
                     </CartItemContainer>
                 ))
             )}
-            {cartItems.length > 0 && (
+            {orderData2.orderData2?.length > 0 && (
                 <TotalContainer>
                     Tổng tiền: <span style={{ color: 'red' }}>{calculateTotal().toLocaleString()} đ</span>
                 </TotalContainer>

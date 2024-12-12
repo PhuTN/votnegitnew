@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import CartComponent from "../../components/CartPageC/CartComponent/CartComponent";
 import CustomBreadcrumb from "../../components/Others/CustomBreadScumb/CustomBreadScumb";
 
@@ -22,6 +23,10 @@ const CartPage = () => {
             image: 'https://cdn.shopvnb.com/uploads/san_pham/vot-cau-long-vnb-v200-xanh-2.webp'
         }
     ];
+
+    
+
+
     return (
         <div>
             <CustomBreadcrumb items={breadcrumbItems} />
@@ -31,7 +36,7 @@ const CartPage = () => {
                 margin: '50px auto 50px auto', 
                 
             }}>
-                <CartComponent initialCartItems={initialItems} />
+                <CartComponent  />
             </div>
         </div>
     );

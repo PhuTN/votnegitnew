@@ -38,10 +38,16 @@ const ProductDetails = ({ product }) => {
       <TabPane tab="Mô Tả Sản Phẩm" key="1">
         <div>
           <Title level={5}>Mô Tả Sản Phẩm</Title>
-          <Text>{product.description}</Text>
+          <Text>
+          <div
+        dangerouslySetInnerHTML={{
+          __html: product.description.replace(/\n/g, '<br/>'),
+        }}
+      />
+    </Text>
         </div>
       </TabPane>
-      <TabPane tab="Thông Số Kỹ Thuật" key="2">
+      <TabPane tab="Thông Số" key="2">
         <div style={{ padding: "0px" }}>
           <Table 
             columns={columns} 

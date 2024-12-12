@@ -1,16 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';  
 import styled from 'styled-components';
 
 import ProductDetailComponent from '../../components/ProductDetailPageC/ProductDetailComponent/ProductDetailComponent';
 import SideBarProductType from '../../components/ProductDetailPageC/SideBarProductType/SideBarProductType';
 import ProductDetails from '../../components/ProductDetailPageC/ProductDecriptionComponent/ProductDecriptionComponent';
 import CustomBreadcrumb from '../../components/Others/CustomBreadScumb/CustomBreadScumb';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchProductById } from '../../redux/Slicer/productSlice';
+import { fetchAttributesByType } from '../../redux/Slicer/attributeSlice';
+
 const ContainerWrapper = styled.div`
   display: flex;
   justify-content: center;
-  
-  max-width: 1200px; /* Adjust this value to control the maximum width */
+  max-width: 1200px;
   margin: 0 auto;
 `;
 
@@ -19,7 +22,6 @@ const Container = styled.div`
   justify-content: space-between;
   align-items: flex-start;
   width: 100%;
-  
   padding: 20px;
 `;
 
@@ -33,103 +35,91 @@ const RightSection = styled.div`
 `;
 
 const StyledProductDetails = styled(ProductDetails)`
-  margin-bottom: 15px; /* Thêm khoảng cách dưới cho ProductDetails */
+  margin-bottom: 15px;
 `;
 
 const ProductDetailPage = () => {
-
   const { productName } = useParams();
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const productId = params.get('productId');
+  const dispatch = useDispatch();
+  
+  const { product, status, error } = useSelector((state) => state.products);
+  const { attributes, status2, error2 } = useSelector((state) => state.attributes);
 
+  useEffect(() => {
+    dispatch(fetchProductById(productName));  
+  }, [dispatch, productName]);
 
+  useEffect(() => {
+    if (product?.type) {
+      dispatch(fetchAttributesByType(product.type)); // Fetch attributes when the 'type' changes
+    }
+  }, [dispatch, product?.type]);
 
+  
 
+  if (!product) {
+    return <div>Loading...</div>; // Render loading if product is null or undefined
+  }
 
+  function mapAttributesToValues(product, attributeList) { 
+    return attributeList?.map(attribute => {
+      const matchedValues = product?.attributeValues?.filter(attributeValue => 
+        attribute?.values?.some(val => val?.value === attributeValue?.value && val?.active)
+      )?.map(attributeValue => ({
+        _id: attributeValue._id,
+        id: attributeValue.id,
+        value: attributeValue.value,
+        active: attributeValue.active
+      }));
+
+      if (matchedValues?.length > 0) {
+        return {
+          attribute: {
+            _id: attribute._id,
+            id: attribute.id,
+            name: attribute.name,
+            type: attribute.type,
+            values: attribute.values
+          },
+          attributeValue: matchedValues
+        };
+      }
+      return null;
+    }).filter(item => item !== null) || [];
+  }
+
+  const result = mapAttributesToValues(product, attributes);
+
+  const transformedData = result?.map((item) => ({
+    label: item.attribute.name,
+    value: item.attributeValue?.map(val => val.value) || [], // Ensure `value` is an array or fallback
+  })) || [];
 
   const productData = {
-    description: "This is a sample product description for Mô Tả Sản Phẩm.",
-    specifications: [
-      { label: "Trình Độ Chơi", value: ["Mới Chơi", "Khá Tốt"] },
-  { label: "Nội Dung Chơi", value: ["Đơn", "Đôi"] },
-  { label: "Phong Cách Chơi", value: ["Công Thủ Toàn Diện", "Tấn Công"] },
-  { label: "Độ Cứng Đũa", value: ["Dẻo", "Trung Bình"] },
-  { label: "Điểm Cân Bằng", value: ["Hơi Nặng Đầu", "Cân Bằng"] },
-  { label: "Swingweight", value: ["82-84 kg/cm2", "85-87 kg/cm2"] },
-  { label: "Chiều Dài Vợt", value: ["665 mm", "670 mm"] },
-  { label: "Chiều Dài Cán Vợt", value: ["200 mm", "205 mm"] },
-  { label: "Thương Hiệu", value: ["Yonex", "Lining"] },
-  { label: "Mức Giá", value: ["Giá dưới 500.000đ", "500.000đ - 1 triệu"] },
-  { label: "Chất Liệu", value: ["Cotton", "Polyester"] },
-
-    ],
+    description: product?.description || '',
+    specifications: transformedData
   };
 
-  const product = { 
-    name: "Vợt Cầu Lông VNB V200 Xanh Chính Hãng", 
-    code: "VNB004563", 
-    brand: "VNB", 
-    status: "Hoạt động", 
-    price: "529.000 đ", 
-    discountedPrice: "900.000 đ", 
-    colorOptions: [ 
-      {  
-        label: 'Xanh',  
-        price: '600.000 đ',  
-        discountedPrice: "900.000 đ",
-        images: [
-          "https://cdn.shopvnb.com/img/300x300/uploads/san_pham/vot-cau-long-vnb-tc88b-1.webp", 
-          "https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-nanoflare-002f-chinh-hang-1_1712621616.webp"
-        ], 
-        stock: [
-          { size: '37', stock: 5 },
-          { size: '38', stock: 3 },
-          { size: '39', stock: 10 },
-          { size: '40', stock: 4 }
-        ]
-      }, 
-      {  
-        label: 'Đỏ',  
-        price: '650.000 đ',  
-        discountedPrice: "900.000 đ",
-        images: [
-          "https://cdn.shopvnb.com/uploads/gallery/vot-cau-long-yonex-nanoflare-002f-chinh-hang-1_1712621616.webp", 
-          "https://cdn.shopvnb.com/img/300x300/uploads/san_pham/vot-cau-long-vnb-tc88b-1.webp"
-        ],  
-        stock: [
-          { size: '37', stock: 2 },
-          { size: '38', stock: 0 },
-          { size: '39', stock: 5 },
-          { size: '40', stock: 1 }
-        ]
-      }
-    ],
-    benefits: [
-      "Tặng 1 đôi vớ cầu lông VNB", 
-      "Sản phẩm cam kết chính hãng", 
-      "Thanh toán sau khi kiểm tra"
-    ]
-  };
-  
-
+  const brand = result?.find(item => item.attribute.name === "Thương hiệu")?.attributeValue?.[0]?.value || "";
   const breadcrumbItems = [
     { path: '/', label: 'Trang Chủ' },
-    { path: '/products', label: 'Vợt' },
+    { path: `/product/${product.type}`, label: product.type },
+    { path: `/product/product-detail/${product._id}`, label: product.id }, 
   ];
-
-  
   return (
     <div>
-    <CustomBreadcrumb items={breadcrumbItems} />
+      <CustomBreadcrumb items={breadcrumbItems} />
       <ContainerWrapper>
         <Container>
           <LeftSection>
-          <ProductDetailComponent product={product} />
+            <ProductDetailComponent 
+              product={product || {}} 
+              brand={brand || ""} 
+            />
             <StyledProductDetails product={productData} />
           </LeftSection>
           <RightSection>
-            <SideBarProductType defaultActiveKey={[0]} /> {/* Expands the "Giày Cầu Lông" panel by default */}
+            <SideBarProductType defaultActiveKey={[0]} />
           </RightSection>
         </Container>
       </ContainerWrapper>

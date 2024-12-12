@@ -34,7 +34,7 @@ const Gallery = ({ itemsArray }) => {
       <Container>
         <ImageGrid>
           {itemsArray.map((item, index) => (
-            <CatagoryComponent key={index} src={item.src} text={item.text} />
+            <CatagoryComponent key={index} src={item.src} text={item.text}  url = {item.key}/>
           ))}
         </ImageGrid>
       </Container>

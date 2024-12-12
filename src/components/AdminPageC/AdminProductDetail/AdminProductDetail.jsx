@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Input, Table, Button, Select, Image, Form, InputNumber, Modal, notification, Upload, Checkbox } from 'antd';
 import { ContainerFilled, DeleteOutlined, EditOutlined, LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
@@ -6,24 +6,80 @@ import { filtersData } from '../../../models/fake-data';
 import { product, productData } from '../../../models/fake-data';
 import DecriptionEnterZone from '../DecriptionEnterZone/DecriptionEnterZone';
 import { ImageBlock, ImageWrapper, ThumbnailList, ThumbnailWrapper, Thumbnail, NavButton, Wrapper, Container, LeftSection, RightSection, Title, StyledInput, TableWrapper } from './style';
+import { useDispatch, useSelector } from 'react-redux';
+import { uploadFile } from '../../../redux/Slicer/uploadSlice';
+import { fetchAttributesByType } from '../../../redux/Slicer/attributeSlice';
+import { updateProduct } from '../../../redux/Slicer/productSlice';
 
 const { Option } = Select;
 
-const AdminProductDetail = () => {
-  const [productState, setProductState] = useState(product);
-  const [productDataState, setProductData] = useState(productData);
+const AdminProductDetail = (selectedRow) => {
+  const dispatch = useDispatch();
+  const { attributes } = useSelector((state) => state.attributes);
+  
+  useEffect(() => {
+    if (selectedRow.type) {
+      dispatch(fetchAttributesByType(selectedRow.type)); // Fetch attributes when the 'type' changes
+    }
+  }, [dispatch, selectedRow.type]); // Re-fetch when 'type' changes
+      // Add more products as needed
+
+      console.log("ATTRRI",attributes)
+
+
+      const generateObjectId = () => {
+        const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0'); // 4 byte timestamp
+        const randomHex = () => Math.random().toString(16).substr(2, 8); // 8 hex chars
+        return (timestamp + randomHex() + randomHex()).substr(0, 24); // Đảm bảo đúng 24 ký tự
+      };
+      
+
+    const newSelectedRow = {
+      ...selectedRow,
+      selectedRow: {
+        ...selectedRow.selectedRow,
+        colors: selectedRow.selectedRow.colors.map(color => {
+          
+
+          const updatedInventory = [...color?.inventory]
+
+          const result = attributes.find(obj => obj.name === "Size");
+
+
+          result?.values.forEach(val => {
+        if (!updatedInventory.some(inv => inv?.attribute === val?._id)) {
+        updatedInventory.push({
+          _id: generateObjectId() ,// Hoặc giá trị mặc định phù hợp nếu cần,
+          attribute: val._id,
+          number: 0,
+         
+        });
+        }
+        });
+        console.log("NEW",updatedInventory)
+
+          return {...color,inventory:updatedInventory};
+        })
+      }
+    };
+
+  
+
+  const [productState, setProductState] = useState(newSelectedRow.selectedRow);
+  console.log("PRODUCT",productState)
+  const [productDataState, setProductData] = useState(attributes || []);
   const [formColorEdit] = Form.useForm();
   const [formStockEdit] = Form.useForm();
   const [formAddStock] = Form.useForm();
   const [formAddColor] = Form.useForm();
   const [formAttribute] = Form.useForm();
- 
+
   const [startIndex, setStartIndex] = useState(0);
   const [selectedColorIndex, setSelectedColorIndex] = useState(0);
   const [isColorModalVisible, setIsColorModalVisible] = useState(false);
   const [isStockModalVisible, setIsStockModalVisible] = useState(false);
   const [isAttributesModalVisible, setIsAttributesModalVisible] = useState(false);
-  const [editingColor, setEditingColor] = useState(null);
+  const [editingColor, setEditingColor] = useState();
   const [editingStock, setEditingStock] = useState(null);
   const [editingAttributes, setEditingAttributes] = useState(null);
 
@@ -31,17 +87,37 @@ const AdminProductDetail = () => {
   const handleCancelStockModal = () => setIsStockModalVisible(false);
   const handleCancelAttributesModal = () => setIsAttributesModalVisible(false);
 
+  
+
+  
+  
+
   const handleOkAttributesModal = async () => {
     try {
       const values = await formAttribute.validateFields();
-      const updatedSpecifications = productDataState.specifications.map((spec) =>
-        spec.label === editingAttributes.attributeName
-          ? { ...spec, value: values.selectedItems }
-          : spec
-      );
-      setProductData((prevState) => ({
+      console.log("VALUE",values.selectedItems)
+
+
+
+      const brandds = attributes.find(inv=> inv.name === "Thương hiệu")
+ 
+
+ 
+ const matchingValues = brandds?.values
+ .filter(value => values.selectedItems.includes(value._id))
+ .map(value => ({ value: value.value, _id: value._id }));
+ console.log("BRAND",matchingValues)
+
+ formAttribute.setFieldsValue({
+  brand: matchingValues[0].value ? matchingValues[0].value : formAttribute.brand,
+});
+
+
+      
+      setProductState((prevState) => ({
         ...prevState,
-        specifications: updatedSpecifications,
+        brand: matchingValues[0].value ? matchingValues[0].value : prevState.brand,
+        attributeValues: values.selectedItems
       }));
       setIsAttributesModalVisible(false);
       setEditingAttributes(null);
@@ -53,16 +129,18 @@ const AdminProductDetail = () => {
   const handleOkColorModal = async () => {
     try {
       const values = await formColorEdit.validateFields();
-      const updatedColorOptions = productState.colorOptions.map((color) =>
+     
+      const updatedColorOptions = productState.colors.map((color) =>
         color.id === editingColor.colorId
           ? {
               ...color,
               price: values.basePrice,
-              discountedPrice: values.discountPrice,
+              discountPrice: values.discountPrice,
             }
           : color
       );
-      productState.colorOptions = updatedColorOptions;
+      productState.colors = updatedColorOptions;
+      console.log(updatedColorOptions)
       setProductState(productState);
       setIsColorModalVisible(false);
       formColorEdit.setFieldsValue({
@@ -73,30 +151,87 @@ const AdminProductDetail = () => {
     } catch {}
   };
 
+
+  const handleOkAddColorModal = async () => {
+    try {
+
+
+      const result = attributes.find(obj => obj.name === "Size");
+
+let updatedInventory = []
+      result?.values.forEach(val => {
+   
+    updatedInventory.push({
+      _id: generateObjectId() ,// Hoặc giá trị mặc định phù hợp nếu cần,
+      attribute: val._id,
+      number: 0,
+     
+    });
+    
+    });
+
+
+      const values = await formAddColor.validateFields();
+      const newColor = {
+        id: Date.now(),
+        colorName: values.colorName,
+        price: values.basePriceNew,
+        discountPrice: values.discountPriceNew,
+        images: tempImages,
+        inventory: updatedInventory,
+        _id: generateObjectId()
+      };
+      setProductState((prevProductState) => ({
+        ...prevProductState,
+        colors: [...prevProductState.colors, newColor],
+      }));
+      setIsAddColorModalVisible(false);
+      setTempImages([]);
+      formAddColor.resetFields();
+    } catch (error) {
+      console.error("Error adding color:", error);
+    }
+  };
+
+
   const handleOkStockModal = async () => {
     try {
-      var id;
+      var id = 0;
       if (editingColor !== null) {
         id = editingColor.colorId;
-      } else {
-        id = colorsData[0].colorId;
       }
-     
       const values = await formStockEdit.validateFields();
-      const updatedColorOptions = productState.colorOptions.map((color) =>
-        color.id === id
-          ? {
-              ...color,
-              stock: color.stock.map((item) =>
-                item.size === editingStock.size
-                  ? { ...item, stock: values.stock }
-                  : item
-              ),
-            }
-          : color
-      );
-      productState.colorOptions = updatedColorOptions;
-      setProductState(productState);
+      console.log("IDD",id)
+
+      let newProduct = productState;
+
+function updateInventoryNumber(productData, colorId, attributeId, newNumber) {
+  // Tìm màu có id tương ứng
+  const selectedColor = productData.colors.find((color) => color.id === colorId);
+
+  if (!selectedColor) {
+    console.log("Không tìm thấy màu với ID:", colorId);
+    return;
+  }
+
+  // Tìm inventory có attribute tương ứng
+  const selectedInventory = selectedColor.inventory.find(
+    (item) => item.attribute === attributeId
+  );
+
+  if (!selectedInventory) {
+    console.log("Không tìm thấy attribute với ID:", attributeId);
+    return;
+  }
+
+  // Cập nhật giá trị `number`
+  selectedInventory.number = newNumber;
+
+}
+updateInventoryNumber(newProduct,id,editingStock._id,values.stock)
+setProductState(newProduct)
+      
+
       setIsStockModalVisible(false);
       formStockEdit.resetFields();
       setEditingStock(null);
@@ -106,6 +241,10 @@ const AdminProductDetail = () => {
   };
 
   const handleColorEdit = (stock) => {
+    const result = productDataState.find(obj => obj.name === "Size");
+
+    
+    console.log(stock)
     setEditingColor(stock);
     setIsColorModalVisible(true);
     formColorEdit.setFieldsValue({
@@ -115,21 +254,27 @@ const AdminProductDetail = () => {
   };
 
   const handleStockEdit = (stock) => {
+    const result = productDataState.find(obj => obj.name === "Size");
+    if(result){
     setEditingStock(stock);
     setIsStockModalVisible(true);
     formStockEdit.setFieldsValue({
-      stock: stock.stock
+      stock: stock.number
     });
+  }
   };
 
   const handleAttributesEdit = (attributes) => {
     setEditingAttributes(attributes);
-    const selectedValues = filtersData
-      .find(filter => filter.label.localeCompare(attributes.attributeName, undefined, { sensitivity: 'base' }) === 0)
-      ?.items.filter(item => attributes.value.includes(item)) || [];
+    const selectedValues = productState.attributeValues;
+      // .find(filter => filter.label.localeCompare(attributes.attributeName, undefined, { sensitivity: 'base' }) === 0)
+      // ?.items.filter(item => attributes.value.includes(item)) || [];
+
+
     formAttribute.setFieldsValue({
       selectedItems: selectedValues,
     });
+    console.log("SELECT", selectedValues)
     setIsAttributesModalVisible(true);
   };
 
@@ -143,43 +288,50 @@ const AdminProductDetail = () => {
     }));
   };
 
-  const brands = filtersData.find((filter) => filter.key === 'brand')?.items || [];
-  const color = productState.colorOptions[selectedColorIndex];
-  const visibleThumbnails = color.images.slice(startIndex, startIndex + 5);
-  const [selectedImage, setSelectedImage] = useState(visibleThumbnails[0]);
+ 
+  
+  const color = productState.colors[selectedColorIndex];
+ 
+  const visibleThumbnails = color.images?.slice(startIndex, startIndex + 5);
+  
+  const [selectedImage, setSelectedImage] = useState(visibleThumbnails[0] || {});
   
   const handlePrev = () => setStartIndex((prev) => Math.max(prev - 1, 0));
   const handleNext = () => setStartIndex((prev) => Math.min(prev + 1, color.images.length - 5));
 
   const handleColorSelect = (record, index) => {
+
+    const result = productDataState.find(obj => obj.name === "Size");
+    if(result){
     setSelectedColorIndex(index);
     setEditingColor(record);
     formAttribute.setFieldsValue({
       basePrice: record.basePrice,
       discountPrice: record.discountPrice,
     });
-    setSelectedImage(productState.colorOptions[index].images[0]);
+    setSelectedImage(productState.colors[index].images[0]);
+  }
   };
 
-  const attributesData = productDataState.specifications.map((spec, index) => ({
-    key: index + 1,
-    attributeName: spec.label,
-    value: spec.value.join(", "),
-  }));
+  // const attributesData = productDataState.specifications.map((spec, index) => ({
+  //   key: index + 1,
+  //   attributeName: spec.label,
+  //   value: spec.value.join(", "),
+  // }));
 
-  const colorsData = productState.colorOptions.map((color, index) => ({
+  const colorsData = productState.colors.map((color, index) => ({
     colorId: color.id,
-    colorName: color.label,
+    colorName: color.colorName,
     images: color.images,
     basePrice: color.price,
-    discountPrice: color.discountedPrice,
+    discountPrice: color.discountPrice,
     status: color.stock > 0 ? 'active' : 'inactive',
   }));
 
   const attributesColumns = [
-    { title: 'ID', dataIndex: 'key', key: 'key' },
-    { title: 'Tên thuộc tính', dataIndex: 'attributeName', key: 'attributeName' },
-    { title: 'Giá trị', dataIndex: 'value', key: 'value' },
+    { title: 'ID', dataIndex: 'id', key: 'id' },
+    { title: 'Tên thuộc tính', dataIndex: 'name', key: 'name' },
+   // { title: 'Giá trị', dataIndex: 'values', key: 'values' },
     {
       title: 'Hành động',
       key: 'action',
@@ -215,9 +367,11 @@ const AdminProductDetail = () => {
     },
   ];
 
+
+
   const stockColumns = [
-    { title: 'Size', dataIndex: 'size', key: 'size' },
-    { title: 'Số lượng', dataIndex: 'stock', key: 'stock' },
+    { title: 'Size', dataIndex: 'value', key: 'value' },
+    { title: 'Số lượng', dataIndex: 'number', key: 'number' },
     {
       title: 'Hành động',
       key: 'action',
@@ -227,20 +381,21 @@ const AdminProductDetail = () => {
     },
   ];
 
-  const benefitsData = productState.benefits.map((benefit, index) => ({
-    key: index + 1,
-    benefitId: benefit.id,
-    description: benefit.description,
-    status: benefit.status,
-  }));
+   const benefitsData = productState.endows.map((endows, index) => ({
+     key: index + 1,
+     benefitId: endows.id,
+     description: endows.description,
+     active: endows.active ? "Hoạt động" :"Không hoạt động",
+   }));
   
   const benefitsColumns = [
     { title: "ID", dataIndex: "id", key: "id" },
     { title: "Mô tả ưu đãi", dataIndex: "description", key: "description" },
     {
       title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
+      dataIndex: "active",
+      key: "active",
+      render: (active) => (active ? "Hoạt động" : "Không hoạt động"),
     },
     {
       title: "Hành động",
@@ -252,8 +407,9 @@ const AdminProductDetail = () => {
   ];
 
   const handleRemoveImage = (imageUrl) => {
+    
     const updatedImages = editingColor.images.filter((img) => img !== imageUrl);
-    const updatedColorOptions = productState.colorOptions.map((color) =>
+    const updatedColorOptions = productState.colors.map((color) =>
       color.id === editingColor.colorId
         ? {
             ...color,
@@ -261,27 +417,14 @@ const AdminProductDetail = () => {
           }
         : color
     );
-    setProductState({ ...productState, colorOptions: updatedColorOptions });
-  };
-
-  const handleImageUpload = ({ file, onSuccess }) => {
-    const newImageUrl = URL.createObjectURL(file);
-    const updatedColorOptions = productState.colorOptions.map((color) =>
-      color.id === editingColor.colorId
-        ? {
-            ...color,
-            images: [...color.images, newImageUrl],
-          }
-        : color
-    );
-    setProductState({ ...productState, colorOptions: updatedColorOptions });
-    const updatedImages = [...editingColor.images, newImageUrl];
+    setProductState({ ...productState, colors: updatedColorOptions });
     setEditingColor((prevColor) => ({
       ...prevColor,
       images: updatedImages,
     }));
-    onSuccess();
   };
+
+  
 
   const [isAddStockModalVisible, setIsAddStockModalVisible] = useState(false);
 
@@ -310,46 +453,102 @@ const AdminProductDetail = () => {
     }
   };
 
-  const initialColor = productState.colorOptions[0];
+  const initialColor = productState.colors[0];
+
   const [isAddColorModalVisible, setIsAddColorModalVisible] = useState(false);
   const [tempImages, setTempImages] = useState([]);
-
+  const [tempImages2, setTempImages2] = useState([]);
   const handleAddColor = () => {
     setIsAddColorModalVisible(true);
   };
 
-  const handleImageUploadAddColor = ({ file, onSuccess }) => {
-    const newImageUrl = URL.createObjectURL(file);
-    setTempImages([...tempImages, newImageUrl]);
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+  //   const newImageUrl = URL.createObjectURL(file);
+  //   setTempImages([...tempImages, newImageUrl]);
+  //   onSuccess();
+  // };
+
+
+  const handleImageUploadAddColor = async (options) => {
+    const { file, onSuccess, onError } = options; // Lấy các tham số từ options
+    
+    try {
+      // Dispatch action upload file từ Redux slice
+      const response = await dispatch(uploadFile(file)); // Đợi kết quả trả về từ slice
+  
+      // Lấy URL từ dữ liệu trả về
+      const uploadedFileUrl = response.payload.data.path; // Điều chỉnh theo dữ liệu trả về từ slice
+      console.log('URL ảnh đã upload:', uploadedFileUrl); // Log URL ra console
+  
+      // Hiển thị thông báo thành công
+      notification.success({
+        message: 'Upload thành công!',
+        description: 'Ảnh đã được tải lên Cloudinary.',
+      });
+
+
+      
+      const updatecolor = [...tempImages, uploadedFileUrl]
+
+      
+  
+        setTempImages([...tempImages, uploadedFileUrl]);
+
+        console.log("TEMPt",updatecolor)
+
+
+       
     onSuccess();
+
+
+
+
+
+      
+    } catch (error) {
+      // Hiển thị thông báo lỗi
+      notification.error({
+        message: 'Upload thất bại!',
+        description: error.message,
+      });
+  
+
+
+      // Gọi hàm onError để thông báo lỗi
+      onError(error);
+
+      console.log(error)
+    }
   };
 
   const handleRemoveImageAddColor = (imageUrl) => {
     setTempImages((prevImages) => prevImages.filter((img) => img !== imageUrl));
   };
 
-  const handleOkAddColorModal = async () => {
-    try {
-      const values = await formAddColor.validateFields();
-      const newColor = {
-        id: Date.now(),
-        label: values.colorName,
-        price: values.basePriceNew,
-        discountedPrice: values.discountPriceNew,
-        images: tempImages,
-        stock: [],
-      };
-      setProductState((prevProductState) => ({
-        ...prevProductState,
-        colorOptions: [...prevProductState.colorOptions, newColor],
-      }));
-      setIsAddColorModalVisible(false);
-      setTempImages([]);
-      formAddColor.resetFields();
-    } catch (error) {
-      console.error("Error adding color:", error);
-    }
-  };
+  
 
   const [isEditBenefitModalVisible, setIsEditBenefitModalVisible] = useState(false);
   const [isAddBenefitModalVisible, setIsAddBenefitModalVisible] = useState(false);
@@ -360,18 +559,18 @@ const AdminProductDetail = () => {
   const handleOkEditBenefitModal = async () => {
     try {
       const values = await formEditBenefit.validateFields();
-      const updatedBenefits = productState.benefits.map((benefit) =>
+      const updatedBenefits = productState.endows.map((benefit) =>
         benefit.id === editingBenefit.id
           ? { 
               ...benefit, 
               description: values.description,
-              status: values.status
+              active: values.active
             }
           : benefit
       );
       setProductState((prevState) => ({
         ...prevState,
-        benefits: updatedBenefits,
+        endows: updatedBenefits,
       }));
       formEditBenefit.resetFields();
       setIsEditBenefitModalVisible(false);
@@ -385,13 +584,14 @@ const AdminProductDetail = () => {
     try {
       const values = await formAddBenefit.validateFields();
       const newBenefit = {
+        _id:generateObjectId(),
         id: Date.now(),
         description: values.description,
-        status: values.status,
+        active: values.active,
       };
       setProductState((prevState) => ({
         ...prevState,
-        benefits: [...prevState.benefits, newBenefit],
+        endows: [...prevState.endows, newBenefit],
       }));
       formAddBenefit.resetFields();
       setIsAddBenefitModalVisible(false);
@@ -401,10 +601,11 @@ const AdminProductDetail = () => {
   };
 
   const handleEditBenefit = (benefit) => {
+    //console.log(benefit)
     setEditingBenefit(benefit);
     formEditBenefit.setFieldsValue({
       description: benefit.description,
-      status: benefit.status,
+      active: benefit.active ? "Hoạt động" : "Không hoạt động",
     });
     setIsEditBenefitModalVisible(true);
   };
@@ -414,9 +615,146 @@ const AdminProductDetail = () => {
     setIsAddBenefitModalVisible(true);
   };
 
+  
+  const { status, error, file } = useSelector((state) => state.upload); // Lấy thông tin từ Redux
+
+  // Hàm xử lý upload ảnh
+  const handleImageUpload = async (options) => {
+    const { file, onSuccess, onError } = options; // Lấy các tham số từ options
+  
+    try {
+      // Dispatch action upload file từ Redux slice
+      const response = await dispatch(uploadFile(file)); // Đợi kết quả trả về từ slice
+  
+      // Lấy URL từ dữ liệu trả về
+      const uploadedFileUrl = response.payload.data.path; // Điều chỉnh theo dữ liệu trả về từ slice
+      console.log('URL ảnh đã upload:', uploadedFileUrl); // Log URL ra console
+  
+      // Hiển thị thông báo thành công
+      notification.success({
+        message: 'Upload thành công!',
+        description: 'Ảnh đã được tải lên Cloudinary.',
+      });
+
+
+      
+  
+      const updatedColorOptions = productState.colors.map((color) =>
+      color.id === editingColor.colorId
+        ? {
+            ...color,
+            images: [...color.images, uploadedFileUrl],
+          }
+        : color
+    );
+    setProductState({ ...productState, colors: updatedColorOptions });
+    const updatedImages = [...editingColor.images, uploadedFileUrl];
+    setEditingColor((prevColor) => ({
+      ...prevColor,
+      images: updatedImages,
+    }));
+    onSuccess();
+
+
+
+
+
+
+      
+    } catch (error) {
+      // Hiển thị thông báo lỗi
+      notification.error({
+        message: 'Upload thất bại!',
+        description: error.message,
+      });
+  
+
+
+      // Gọi hàm onError để thông báo lỗi
+      onError(error);
+    }
+  };
+  let combinedArray= []
+  
+  
+  
+  const colorrr= productState.colors.find(obj=>obj?.id === editingColor?.colorId)
+if(colorrr){
+
+
+  const result = productDataState.find(obj => obj.name === "Size");
+  
+
+
+   combinedArray = result?.values.map(val => {
+    // Tìm item trong inventory có attribute trùng với _id của value
+    const matchingInventory = colorrr?.inventory?.find(inv => inv.attribute === val._id);
+  
+    return {
+      _id: val._id,
+      value: val.value,
+      number: matchingInventory ? matchingInventory.number : 0
+    };
+  });
+
+
+
+}
+
+ 
+const handleSave =  async ( ) => {
+  // Your save logic here
+
+  try {
+
+
+
+    function transformProduct(obj) {
+      return {
+        id: obj.id,
+        name: obj.name,
+        description: obj.description,
+        type: obj.type,
+        brand: obj.brand,
+        attributeValues: obj.attributeValues,
+        colors: obj.colors.map(color => ({
+          id: color.id,
+          colorName: color.colorName,
+          images: color.images,
+          price: color.price,
+          discountPrice: color.discountPrice,
+          inventory: color.inventory.map(item => ({
+            attribute: item.attribute,
+            number: item.number
+          }))
+        })),
+        endows: obj.endows.map(endow => ({
+          id: endow.id,
+          description: endow.description,
+          active: endow.active
+        })),
+        sold: obj.sold,
+        active: obj.active
+      };
+    }
+
+
+    const NNNNN = transformProduct(productState)
+    dispatch(updateProduct({ id: productState.productID  , data: NNNNN
+ }));
+  } catch (error) {
+    
+  }
+  
+};
+
+
   return (
     <Wrapper>
       <Title>Thông tin sản phẩm</Title>
+      <Button onClick={() => handleSave()} type="primary" style={{ width: "10%" }}>
+                  Save
+                </Button>
       <Container>
         <LeftSection>
           <ImageBlock>
@@ -450,29 +788,46 @@ const AdminProductDetail = () => {
         </LeftSection>
         <RightSection>
           <Form form={formAttribute} layout="vertical">
-            <Form.Item label="Tên sản phẩm" name="productName" initialValue={productState.name} style={{ display: 'inline-block', width: 'calc(50% - 8px)', marginRight: '16px' }}>
-              <StyledInput placeholder="Nhập tên sản phẩm" />
-            </Form.Item>
+          <Form.Item
+  label="Tên sản phẩm"
+  name="productName"
+  initialValue={productState.name}
+  style={{ display: 'inline-block', width: 'calc(50% - 8px)', marginRight: '16px' }}
+>
+  <StyledInput
+    placeholder="Nhập tên sản phẩm"
+    value={productState.name} // Truyền giá trị từ productState
+    onChange={(e) => {
+      const updatedName = e.target.value; // Lấy giá trị mới từ input
+      setProductState((prevState) => ({
+        ...prevState,
+        name: updatedName, // Cập nhật name trong productState
+      }));
+    }}
+  />
+</Form.Item>
+
             <Form.Item label="Hãng" name="brand" initialValue={productState.brand} style={{ display: 'inline-block', width: 'calc(50% - 8px)' }}>
-              <Select>
-                {brands.map((brand, index) => (
-                  <Option key={index} value={brand}>
-                    {brand}
-                  </Option>
-                ))}
-              </Select>
+              
+              <StyledInput
+   
+    value={productState.brand} // Truyền giá trị từ productState
+    style={{  pointerEvents: 'none'}}
+  />
+              
             </Form.Item>
             <Form.Item style={{ display: 'inline-block', width: 'calc(50% - 8px)', marginRight: '16px' }}>
               <Form.Item
                 label="Giá gốc"
                 name="basePrice"
+                
                 initialValue={initialColor ? initialColor.price : 0}
                 style={{ marginBottom: 0 }}
               >
                 <InputNumber
-                  placeholder="Nhập giá gốc"
+              
                   min={0}
-                  style={{ width: '100%' }}
+                  style={{ width: '100%' , pointerEvents: 'none'}}
                   readOnly
                   formatter={(value) => `₫ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                 />
@@ -482,13 +837,14 @@ const AdminProductDetail = () => {
               <Form.Item
                 label="Giá giảm"
                 name="discountPrice"
-                initialValue={initialColor ? initialColor.discountedPrice : 0}
+                initialValue={initialColor ? initialColor.discountPrice : 0}
                 style={{ marginBottom: 0 }}
               >
                 <InputNumber
-                  placeholder="Nhập giá giảm"
+                  
+                  
                   min={0}
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', pointerEvents: 'none' }}
                   formatter={(value) => `₫ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                   readOnly
                 />
@@ -500,7 +856,7 @@ const AdminProductDetail = () => {
             Thêm ưu đãi
           </Button>
           <Table
-            dataSource={productState.benefits}
+            dataSource={productState.endows}
             columns={benefitsColumns}
             rowKey="benefitId"
             pagination={false}
@@ -528,16 +884,16 @@ const AdminProductDetail = () => {
           />
         </TableWrapper>
         <TableWrapper style={{ marginLeft: '20px' }}>
-          <Title>Bảng tồn kho/size màu {color.label}</Title>
-          <Button
+          <Title>Bảng tồn kho/size màu {color. colorName}</Title>
+          {/* <Button
             icon={<PlusOutlined />}
             onClick={handleAddStock}
             style={{ marginBottom: '16px' }}
           >
             Thêm tồn kho
-          </Button>
+          </Button> */}
           <Table
-            dataSource={color.stock}
+            dataSource={combinedArray}
             columns={stockColumns}
             rowKey="size"
             pagination={false}
@@ -547,21 +903,45 @@ const AdminProductDetail = () => {
       <Container style={{ display: 'block' }}>
         <Title>Bảng thuộc tính</Title>
         <Table
-          dataSource={attributesData}
+          dataSource={productDataState}
           columns={attributesColumns}
           rowKey="id"
           pagination={false}
           style={{ marginBottom: '20px' }}
         />
       </Container>
-      <Container style={{ display: 'block' }}>
-        <Title>Thông tin</Title>
-        <div style={{ width: '100%', marginTop: '-50px' }}>
-          <DecriptionEnterZone />
-        </div>
-      </Container>
+      
 
-      {/* Color Edit Modal */}
+      <Container style={{ display: 'block' }}>
+  <Title>Thông tin</Title>
+  <div style={{ width: '100%', marginTop: '-50px' }}>
+    <textarea
+      placeholder="Nhập mô tả sản phẩm"
+      value={productState.description} // Truyền giá trị từ productState
+      onChange={(e) => {
+        const updatedDescription = e.target.value; // Lấy giá trị mới từ textarea
+        setProductState((prevState) => ({
+          ...prevState,
+          description: updatedDescription, // Cập nhật description trong productState
+        }));
+      }}
+      style={{
+        width: '100%',
+        height: '900px', // Điều chỉnh chiều cao
+        fontSize: '16px',
+        padding: '10px',
+        border: '1px solid #ccc',
+        borderRadius: '4px',
+        resize: 'none', // Ngăn người dùng thay đổi kích thước khung
+        lineHeight: '1.5', // Tăng khoảng cách giữa các dòng
+        overflowY: 'auto', // Thêm scroll nếu vượt quá chiều cao
+      }}
+    />
+  </div>
+</Container>
+
+
+   
       <Modal
         title="Chỉnh sửa màu sắc"
         visible={isColorModalVisible}
@@ -605,7 +985,7 @@ const AdminProductDetail = () => {
         </Form>
       </Modal>
 
-      {/* Stock Edit Modal */}
+  
       <Modal
         title="Chỉnh sửa thông tin kho"
         visible={isStockModalVisible}
@@ -613,13 +993,13 @@ const AdminProductDetail = () => {
         onCancel={handleCancelStockModal}
       >
         <Form form={formStockEdit}>
-          <Form.Item name="stock" label="Số lượng" initialValue={editingStock?.stock}>
+          <Form.Item name="stock" label="Số lượng" >
             <InputNumber min={0} />
           </Form.Item>
         </Form>
       </Modal>
 
-      {/* Attributes Edit Modal */}
+ 
       <Modal
         title="Chỉnh sửa thông số kỹ thuật"
         visible={isAttributesModalVisible}
@@ -628,26 +1008,37 @@ const AdminProductDetail = () => {
       >
         <Form form={formAttribute}>
           <Form.Item label="Chọn các giá trị" name="selectedItems">
-            <Checkbox.Group>
-              {filtersData
-                .filter(
-                  (filter) =>
-                    filter.label.localeCompare(editingAttributes?.attributeName || '', undefined, { sensitivity: 'base' }) === 0
-                )
-                .map((filter) => (
-                  <div key={filter.key}>
-                    {filter.items.map((item) => (
-                      <Checkbox key={item} value={item}>
-                        {item}
-                      </Checkbox>
-                    ))}
-                  </div>
-                ))}
-            </Checkbox.Group>
+          <Checkbox.Group>
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+    {productDataState.map((filter) => (
+      filter?.values.map((item) => {
+        const isHidden =
+          filter.id.localeCompare(editingAttributes?.id || '', undefined, { sensitivity: 'base' }) !== 0;
+        return (
+          <div
+            key={item._id}
+            style={{
+              display: 'flex',
+              alignItems: 'center', // Căn chỉnh checkbox và label theo chiều dọc
+              display: isHidden ? 'none' : 'flex',
+            }}
+          >
+            <Checkbox value={item._id} style={{ marginRight: '5px' }} />
+            <span>{item.value}</span>
+          </div>
+        );
+      })
+    ))}
+  </div>
+</Checkbox.Group>
+
           </Form.Item>
         </Form>
       </Modal>
-
+      {/* .filter(
+                  (filter) =>
+                    filter.label.localeCompare(editingAttributes?.attributeName || '', undefined, { sensitivity: 'base' }) === 0
+                ) */}
       <Modal
         title="Thêm màu sắc mới"
         visible={isAddColorModalVisible}
@@ -699,7 +1090,7 @@ const AdminProductDetail = () => {
         </Form>
       </Modal>
 
-      {/* Add Stock Modal */}
+   
       <Modal
         title="Thêm tồn kho mới"
         visible={isAddStockModalVisible}
@@ -709,8 +1100,9 @@ const AdminProductDetail = () => {
         <Form form={formAddStock}>
           <Form.Item name="sizeNew" label="Size" rules={[{ required: true, message: 'Vui lòng chọn size' }]}>
             <Select placeholder="Chọn size">
-              {filtersData.find((item) => item.key === 'size').items.map((size, index) => (
-                <Select.Option key={index} value={size}>{size}</Select.Option>
+              {productDataState.find((item) => item.name === 'Size')?.values
+                .map((size, index) => (
+                <Select.Option key={index} value={size._id}>{size.value}</Select.Option>
               ))}
             </Select>
           </Form.Item>
@@ -736,14 +1128,14 @@ const AdminProductDetail = () => {
             <Input placeholder="Nhập mô tả ưu đãi" />
           </Form.Item>
           <Form.Item
-            name="status"
+            name="active"
             label="Trạng thái"
             rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
             initialValue={editingBenefit ? editingBenefit.status : "Hoạt động"}
           >
             <Select>
-              <Option value="Hoạt động">Hoạt động</Option>
-              <Option value="Không hoạt động">Không hoạt động</Option>
+              <Option value={true}>Hoạt động</Option>
+              <Option value={false}>Không hoạt động</Option>
             </Select>
           </Form.Item>
         </Form>
@@ -764,13 +1156,13 @@ const AdminProductDetail = () => {
             <Input placeholder="Nhập mô tả ưu đãi" />
           </Form.Item>
           <Form.Item
-            name="status"
+            name="active"
             label="Trạng thái"
             rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
           >
             <Select>
-              <Option value="Hoạt động">Hoạt động</Option>
-              <Option value="Không hoạt động">Không hoạt động</Option>
+            <Option value={true}>Hoạt động</Option>
+            <Option value={false}>Không hoạt động</Option>
             </Select>
           </Form.Item>
         </Form>
