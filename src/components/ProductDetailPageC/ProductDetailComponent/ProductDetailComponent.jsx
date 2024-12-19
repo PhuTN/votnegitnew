@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Button, Divider, Typography, Radio, Image } from 'antd';
+import { Button, Divider, Typography, Radio, Image, message } from 'antd';
 import { LeftOutlined, MinusOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import Gift from '../../../images/gift.gif';
 
@@ -157,6 +157,8 @@ const ProductDetailComponent = ({ product, brand }) => {
   setCartUpdated((prevState) => !prevState);
   
   window.location.reload()
+  message.success(`Thêm vào giỏ hàng thành công`);
+  
     }
   };
  
@@ -268,16 +270,17 @@ const ProductDetailComponent = ({ product, brand }) => {
           <QuantityWrapper>
             <QuantityButton onClick={decreaseQuantity} icon={<MinusOutlined />} />
             <QuantityDisplay>{quantity}</QuantityDisplay>
-            <QuantityButton onClick={increaseQuantity} icon={<PlusOutlined />} />
+            <QuantityButton data-testid = "addBtn" onClick={increaseQuantity} icon={<PlusOutlined />} />
           </QuantityWrapper>
         </ActionsWrapper>
-        <Link to='/order-detail/payment' style={{ textDecoration: 'none' }}>
+        {/* <Link to='/order-detail/payment' style={{ textDecoration: 'none' }}>
           <CustomButton type="primary" danger disabled={availableStock === 0}>Mua Ngay</CustomButton>
-        </Link>
+        </Link> */}
         <CustomButton
   type="default"
   disabled={availableStock === 0}
   onClick={handleUpdateCart}
+  data-testid = "cartBtn"
 >
   Thêm vào Giỏ hàng
 </CustomButton>

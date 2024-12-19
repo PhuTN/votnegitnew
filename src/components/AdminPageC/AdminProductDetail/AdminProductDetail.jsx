@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Input, Table, Button, Select, Image, Form, InputNumber, Modal, notification, Upload, Checkbox } from 'antd';
+import { Input, Table, Button, Select, Image, Form, InputNumber, Modal, notification, Upload, Checkbox, message } from 'antd';
 import { ContainerFilled, DeleteOutlined, EditOutlined, LeftOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { filtersData } from '../../../models/fake-data';
 import { product, productData } from '../../../models/fake-data';
@@ -16,16 +16,18 @@ const { Option } = Select;
 const AdminProductDetail = (selectedRow) => {
   const dispatch = useDispatch();
   const { attributes } = useSelector((state) => state.attributes);
-  
+  console.log("PRODUCT",selectedRow)
   useEffect(() => {
+   
     if (selectedRow.type) {
+      console.log("HELLLLLO")
       dispatch(fetchAttributesByType(selectedRow.type)); // Fetch attributes when the 'type' changes
     }
   }, [dispatch, selectedRow.type]); // Re-fetch when 'type' changes
       // Add more products as needed
 
       console.log("ATTRRI",attributes)
-
+      
 
       const generateObjectId = () => {
         const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0'); // 4 byte timestamp
@@ -38,7 +40,7 @@ const AdminProductDetail = (selectedRow) => {
       ...selectedRow,
       selectedRow: {
         ...selectedRow.selectedRow,
-        colors: selectedRow.selectedRow.colors.map(color => {
+        colors: selectedRow.selectedRow.colors?.map(color => {
           
 
           const updatedInventory = [...color?.inventory]
@@ -66,7 +68,7 @@ const AdminProductDetail = (selectedRow) => {
   
 
   const [productState, setProductState] = useState(newSelectedRow.selectedRow);
-  console.log("PRODUCT",productState)
+  
   const [productDataState, setProductData] = useState(attributes || []);
   const [formColorEdit] = Form.useForm();
   const [formStockEdit] = Form.useForm();
@@ -94,8 +96,9 @@ const AdminProductDetail = (selectedRow) => {
 
   const handleOkAttributesModal = async () => {
     try {
+      setIsAttributesModalVisible(false);
       const values = await formAttribute.validateFields();
-      console.log("VALUE",values.selectedItems)
+      console.log("VALUE",values)
 
 
 
@@ -119,7 +122,7 @@ const AdminProductDetail = (selectedRow) => {
         brand: matchingValues[0].value ? matchingValues[0].value : prevState.brand,
         attributeValues: values.selectedItems
       }));
-      setIsAttributesModalVisible(false);
+      
       setEditingAttributes(null);
     } catch (error) {
       console.error("Error updating attributes:", error);
@@ -148,6 +151,8 @@ const AdminProductDetail = (selectedRow) => {
         discountPrice: values.discountPrice,
       });
       setEditingColor(null);
+
+      message.success('Sửa màu sắc thành công!');
     } catch {}
   };
 
@@ -188,57 +193,61 @@ let updatedInventory = []
       setIsAddColorModalVisible(false);
       setTempImages([]);
       formAddColor.resetFields();
+      message.success('Thêm màu mới thành công!');
     } catch (error) {
       console.error("Error adding color:", error);
     }
   };
 
 
-  const handleOkStockModal = async () => {
+  const handleOkStockModal = async () => { 
     try {
       var id = 0;
       if (editingColor !== null) {
         id = editingColor.colorId;
       }
       const values = await formStockEdit.validateFields();
-      console.log("IDD",id)
-
-      let newProduct = productState;
-
-function updateInventoryNumber(productData, colorId, attributeId, newNumber) {
-  // Tìm màu có id tương ứng
-  const selectedColor = productData.colors.find((color) => color.id === colorId);
-
-  if (!selectedColor) {
-    console.log("Không tìm thấy màu với ID:", colorId);
-    return;
-  }
-
-  // Tìm inventory có attribute tương ứng
-  const selectedInventory = selectedColor.inventory.find(
-    (item) => item.attribute === attributeId
-  );
-
-  if (!selectedInventory) {
-    console.log("Không tìm thấy attribute với ID:", attributeId);
-    return;
-  }
-
-  // Cập nhật giá trị `number`
-  selectedInventory.number = newNumber;
-
-}
-updateInventoryNumber(newProduct,id,editingStock._id,values.stock)
-setProductState(newProduct)
-      
-
+      console.log("IDD", id);
+  
+      // Tạo bản sao sâu của productState
+      let newProduct = JSON.parse(JSON.stringify(productState));
+  
+      // Cập nhật tồn kho
+      updateInventoryNumber(newProduct, id, editingStock._id, values.stock);
+      setProductState(newProduct);  // Cập nhật lại state
+  
       setIsStockModalVisible(false);
       formStockEdit.resetFields();
       setEditingStock(null);
+      message.success('Sửa tồn kho thành công!');
     } catch (error) {
-      console.error("Error updating stock:", error);
+      console.log("Error updating stock:", error);
     }
   };
+  
+  function updateInventoryNumber(productData, colorId, attributeId, newNumber) {
+    // Tìm màu có id tương ứng
+    let selectedColor = productData.colors.find((color) => color.id === colorId);
+  
+    if (!selectedColor) {
+      console.log("Không tìm thấy màu với ID:", colorId);
+      return;
+    }
+  
+    // Tìm inventory có attribute tương ứng
+    let selectedInventory = selectedColor.inventory.find(
+      (item) => item.attribute === attributeId
+    );
+  
+    if (!selectedInventory) {
+      console.log("Không tìm thấy attribute với ID:", attributeId);
+      return;
+    }
+  
+    // Cập nhật giá trị `number`
+    selectedInventory.number = newNumber;
+  }
+  
 
   const handleColorEdit = (stock) => {
     const result = productDataState.find(obj => obj.name === "Size");
@@ -290,14 +299,15 @@ setProductState(newProduct)
 
  
   
-  const color = productState.colors[selectedColorIndex];
+  const color = productState?.colors[selectedColorIndex]|| null;
  
-  const visibleThumbnails = color.images?.slice(startIndex, startIndex + 5);
+  const visibleThumbnails = color?.images?.slice(startIndex, startIndex + 5);
+  
   
   const [selectedImage, setSelectedImage] = useState(visibleThumbnails[0] || {});
   
   const handlePrev = () => setStartIndex((prev) => Math.max(prev - 1, 0));
-  const handleNext = () => setStartIndex((prev) => Math.min(prev + 1, color.images.length - 5));
+  const handleNext = () => setStartIndex((prev) => Math.min(prev + 1, color?.images?.length - 5));
 
   const handleColorSelect = (record, index) => {
 
@@ -309,7 +319,7 @@ setProductState(newProduct)
       basePrice: record.basePrice,
       discountPrice: record.discountPrice,
     });
-    setSelectedImage(productState.colors[index].images[0]);
+    setSelectedImage(productState?.colors[index]?.images[0]);
   }
   };
 
@@ -322,7 +332,7 @@ setProductState(newProduct)
   const colorsData = productState.colors.map((color, index) => ({
     colorId: color.id,
     colorName: color.colorName,
-    images: color.images,
+    images: color?.images,
     basePrice: color.price,
     discountPrice: color.discountPrice,
     status: color.stock > 0 ? 'active' : 'inactive',
@@ -336,7 +346,7 @@ setProductState(newProduct)
       title: 'Hành động',
       key: 'action',
       render: (record) => (
-        <Button icon={<EditOutlined />} style={{ backgroundColor: '#52c41a' }} onClick={() => handleAttributesEdit(record)} />
+        <Button icon={<EditOutlined />} style={{ backgroundColor: '#52c41a' }} onClick={() => handleAttributesEdit(record)} data-testid={`${record.id}`}/>
       ),
     },
   ];
@@ -362,7 +372,7 @@ setProductState(newProduct)
       title: 'Hành động',
       key: 'action',
       render: (record) => (
-        <Button icon={<EditOutlined />} style={{ backgroundColor: '#52c41a' }} onClick={() => handleColorEdit(record)} />
+        <Button icon={<EditOutlined />} style={{ backgroundColor: '#52c41a' }} onClick={() => handleColorEdit(record)} data-testid={`${record.colorId}`}  />
       ),
     },
   ];
@@ -376,7 +386,7 @@ setProductState(newProduct)
       title: 'Hành động',
       key: 'action',
       render: (record) => (
-        <Button icon={<EditOutlined />} style={{ backgroundColor: '#52c41a' }} onClick={() => handleStockEdit(record)} />
+        <Button data-testid={`${record.value}`} icon={<EditOutlined />} style={{ backgroundColor: '#52c41a' }} onClick={() => handleStockEdit(record)}  />
       ),
     },
   ];
@@ -401,14 +411,14 @@ setProductState(newProduct)
       title: "Hành động",
       key: "action",
       render: (record) => (
-        <Button icon={<EditOutlined />} style={{ backgroundColor: "#52c41a" }} onClick={() => handleEditBenefit(record)} />
+        <Button icon={<EditOutlined />} style={{ backgroundColor: "#52c41a" }} onClick={() => handleEditBenefit(record)}  data-testid={`${record.id}`}  />
       ),
     },
   ];
 
   const handleRemoveImage = (imageUrl) => {
     
-    const updatedImages = editingColor.images.filter((img) => img !== imageUrl);
+    const updatedImages = editingColor?.images.filter((img) => img !== imageUrl);
     const updatedColorOptions = productState.colors.map((color) =>
       color.id === editingColor.colorId
         ? {
@@ -575,6 +585,7 @@ setProductState(newProduct)
       formEditBenefit.resetFields();
       setIsEditBenefitModalVisible(false);
       setEditingBenefit(null);
+      message.success('Chỉnh sửa ưu đãi thành công!');
     } catch (error) {
       console.error("Error updating benefit:", error);
     }
@@ -587,7 +598,7 @@ setProductState(newProduct)
         _id:generateObjectId(),
         id: Date.now(),
         description: values.description,
-        active: values.active,
+        active: true,
       };
       setProductState((prevState) => ({
         ...prevState,
@@ -595,6 +606,7 @@ setProductState(newProduct)
       }));
       formAddBenefit.resetFields();
       setIsAddBenefitModalVisible(false);
+      message.success('Thêm ưu đãi thành công!');
     } catch (error) {
       console.error("Error adding benefit:", error);
     }
@@ -613,6 +625,7 @@ setProductState(newProduct)
   const handleAddBenefit = () => {
     formAddBenefit.resetFields();
     setIsAddBenefitModalVisible(true);
+    
   };
 
   
@@ -643,12 +656,12 @@ setProductState(newProduct)
       color.id === editingColor.colorId
         ? {
             ...color,
-            images: [...color.images, uploadedFileUrl],
+            images: [...color?.images, uploadedFileUrl],
           }
         : color
     );
     setProductState({ ...productState, colors: updatedColorOptions });
-    const updatedImages = [...editingColor.images, uploadedFileUrl];
+    const updatedImages = [...editingColor?.images, uploadedFileUrl];
     setEditingColor((prevColor) => ({
       ...prevColor,
       images: updatedImages,
@@ -686,7 +699,7 @@ if(colorrr){
   
 
 
-   combinedArray = result?.values.map(val => {
+   combinedArray = result?.values?.map(val => {
     // Tìm item trong inventory có attribute trùng với _id của value
     const matchingInventory = colorrr?.inventory?.find(inv => inv.attribute === val._id);
   
@@ -720,7 +733,7 @@ const handleSave =  async ( ) => {
         colors: obj.colors.map(color => ({
           id: color.id,
           colorName: color.colorName,
-          images: color.images,
+          images: color?.images,
           price: color.price,
           discountPrice: color.discountPrice,
           inventory: color.inventory.map(item => ({
@@ -742,6 +755,8 @@ const handleSave =  async ( ) => {
     const NNNNN = transformProduct(productState)
     dispatch(updateProduct({ id: productState.productID  , data: NNNNN
  }));
+
+ message.success('Lưu thành công!');
   } catch (error) {
     
   }
@@ -752,9 +767,29 @@ const handleSave =  async ( ) => {
   return (
     <Wrapper>
       <Title>Thông tin sản phẩm</Title>
-      <Button onClick={() => handleSave()} type="primary" style={{ width: "10%" }}>
-                  Save
+      <Button onClick={() => handleSave()} type="primary" style={{ width: "10%" }} data-testid = "nutluu">
+                  Lưu
                 </Button>
+                <Select
+                data-testid = "select"
+  defaultValue={productState.active ? "Hoạt động" : "Không hoạt động"}
+  style={{ width: 180, marginLeft: "20px" }}
+  onChange={(value) => {
+    setProductState((prev) => ({
+      ...prev,
+      active: value === "Hoạt động",
+    }));
+    if(value === "Hoạt động"){
+                  message.success(`Đưa ${productState.name} hoạt động!`);
+                }
+                else{
+                  message.success(`Vô hiệu hóa ${productState.name}!`);
+                }
+  }}
+>
+  <Option value="Hoạt động" data-testid = "activep">Hoạt động</Option>
+  <Option value="Không hoạt động" data-testid = "unactivep">Không hoạt động</Option>
+</Select> 
       <Container>
         <LeftSection>
           <ImageBlock>
@@ -778,7 +813,7 @@ const handleSave =  async ( ) => {
                   />
                 ))}
               </ThumbnailWrapper>
-              {startIndex < color.images.length - 5 && (
+              {startIndex < color?.images?.length - 5 && (
                 <NavButton onClick={handleNext}>
                   <RightOutlined />
                 </NavButton>
@@ -804,6 +839,7 @@ const handleSave =  async ( ) => {
         name: updatedName, // Cập nhật name trong productState
       }));
     }}
+    data-testid = "tensanpham"
   />
 </Form.Item>
 
@@ -852,7 +888,7 @@ const handleSave =  async ( ) => {
             </Form.Item>
           </Form>
           <Title>Bảng ưu đãi</Title>
-          <Button icon={<PlusOutlined />} onClick={handleAddBenefit} style={{ marginBottom: '16px' }}>
+          <Button icon={<PlusOutlined />} onClick={handleAddBenefit} style={{ marginBottom: '16px' }} data-testid = "themuudai">
             Thêm ưu đãi
           </Button>
           <Table
@@ -870,6 +906,7 @@ const handleSave =  async ( ) => {
             icon={<PlusOutlined />}
             onClick={handleAddColor}
             style={{ marginBottom: '16px' }}
+             data-testid = "themmaubtn"
           >
             Thêm màu sắc
           </Button>
@@ -884,7 +921,7 @@ const handleSave =  async ( ) => {
           />
         </TableWrapper>
         <TableWrapper style={{ marginLeft: '20px' }}>
-          <Title>Bảng tồn kho/size màu {color. colorName}</Title>
+          <Title>Bảng tồn kho/size màu {color.colorName}</Title>
           {/* <Button
             icon={<PlusOutlined />}
             onClick={handleAddStock}
@@ -916,6 +953,7 @@ const handleSave =  async ( ) => {
   <Title>Thông tin</Title>
   <div style={{ width: '100%', marginTop: '-50px' }}>
     <textarea
+    data-testid="des"
       placeholder="Nhập mô tả sản phẩm"
       value={productState.description} // Truyền giá trị từ productState
       onChange={(e) => {
@@ -947,12 +985,13 @@ const handleSave =  async ( ) => {
         visible={isColorModalVisible}
         onOk={handleOkColorModal}
         onCancel={handleCancelColorModal}
+        okButtonProps={{ "data-testid": "okmau" }}
       >
         <Form form={formColorEdit}>
-          <Form.Item name="basePrice" label="Giá" initialValue={editingColor?.basePrice}>
+          <Form.Item name="basePrice" label="Giá" initialValue={editingColor?.basePrice} data-testid = "inputgoc">
             <Input />
           </Form.Item>
-          <Form.Item name="discountPrice" label="Giá giảm" initialValue={editingColor?.discountPrice}>
+          <Form.Item name="discountPrice" label="Giá giảm" initialValue={editingColor?.discountPrice} data-testid = "inputgiam">
             <Input />
           </Form.Item>
           <Form.Item label="Hình ảnh">
@@ -965,6 +1004,7 @@ const handleSave =  async ( ) => {
                     icon={<DeleteOutlined />}
                     onClick={() => handleRemoveImage(image)}
                     style={{ position: 'absolute', top: 0, right: 0, color: 'red' }}
+                    
                   />
                 </div>
               ))}
@@ -978,7 +1018,7 @@ const handleSave =  async ( ) => {
             >
               <div>
                 <PlusOutlined />
-                <div style={{ marginTop: 8 }}>Upload</div>
+                <div style={{ marginTop: 8 }} data-testid = "inputanh">Upload</div>
               </div>
             </Upload>
           </Form.Item>
@@ -986,25 +1026,12 @@ const handleSave =  async ( ) => {
       </Modal>
 
   
-      <Modal
-        title="Chỉnh sửa thông tin kho"
-        visible={isStockModalVisible}
-        onOk={handleOkStockModal}
-        onCancel={handleCancelStockModal}
-      >
-        <Form form={formStockEdit}>
-          <Form.Item name="stock" label="Số lượng" >
-            <InputNumber min={0} />
-          </Form.Item>
-        </Form>
-      </Modal>
-
- 
-      <Modal
+      <Modal 
         title="Chỉnh sửa thông số kỹ thuật"
         visible={isAttributesModalVisible}
         onOk={handleOkAttributesModal}
         onCancel={handleCancelAttributesModal}
+        okButtonProps={{ "data-testid": "ok" }}
       >
         <Form form={formAttribute}>
           <Form.Item label="Chọn các giá trị" name="selectedItems">
@@ -1023,7 +1050,7 @@ const handleSave =  async ( ) => {
               display: isHidden ? 'none' : 'flex',
             }}
           >
-            <Checkbox value={item._id} style={{ marginRight: '5px' }} />
+            <Checkbox value={item._id} style={{ marginRight: '5px' }}  data-testid={item.value} />
             <span>{item.value}</span>
           </div>
         );
@@ -1034,7 +1061,8 @@ const handleSave =  async ( ) => {
 
           </Form.Item>
         </Form>
-      </Modal>
+      </Modal> 
+
       {/* .filter(
                   (filter) =>
                     filter.label.localeCompare(editingAttributes?.attributeName || '', undefined, { sensitivity: 'base' }) === 0
@@ -1044,20 +1072,20 @@ const handleSave =  async ( ) => {
         visible={isAddColorModalVisible}
         onOk={handleOkAddColorModal}
         onCancel={() => setIsAddColorModalVisible(false)}
+        okButtonProps={{ "data-testid": "okmau" }}
       >
         <Form form={formAddColor}>
           <Form.Item name="colorName" label="Chọn màu" rules={[{ required: true, message: 'Vui lòng nhập giá gốc' }]}>
-            <Select>
-              {filtersData.find(item => item.key === 'color').items.map((color, index) => (
-                <option key={index} value={color}>{color}</option>
-              ))}
-            </Select>
+            
+
+              <Input style={{ width: '100%' }}  data-testid = "inputmau"/>
+      
           </Form.Item>
           <Form.Item name="basePriceNew" label="Giá gốc" rules={[{ required: true, message: 'Vui lòng nhập giá gốc' }]}>
-            <InputNumber min={0} style={{ width: '100%' }} />
+            <InputNumber data-testid = "inputgoc" min={0} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="discountPriceNew" label="Giá giảm">
-            <InputNumber min={0} style={{ width: '100%' }} />
+            <InputNumber data-testid = "inputgiam" min={0} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item label="Hình ảnh">
             <Upload
@@ -1065,7 +1093,7 @@ const handleSave =  async ( ) => {
               showUploadList={false}
               accept="image/*"
             >
-              <Button icon={<PlusOutlined />}>Tải ảnh lên</Button>
+              <Button icon={<PlusOutlined />} data-testid = "inputanh" >Tải ảnh lên</Button>
             </Upload>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
               {tempImages.map((img, idx) => (
@@ -1117,6 +1145,7 @@ const handleSave =  async ( ) => {
         visible={isEditBenefitModalVisible}
         onOk={handleOkEditBenefitModal}
         onCancel={() => setIsEditBenefitModalVisible(false)}
+        okButtonProps={{ "data-testid": "okuudai" }}
       >
         <Form form={formEditBenefit} layout="vertical">
           <Form.Item
@@ -1125,7 +1154,7 @@ const handleSave =  async ( ) => {
             rules={[{ required: true, message: "Vui lòng nhập mô tả ưu đãi" }]}
             initialValue={editingBenefit ? editingBenefit.description : ""}
           >
-            <Input placeholder="Nhập mô tả ưu đãi" />
+            <Input placeholder="Nhập mô tả ưu đãi" data-testid = "inputuudai" />
           </Form.Item>
           <Form.Item
             name="active"
@@ -1133,9 +1162,9 @@ const handleSave =  async ( ) => {
             rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
             initialValue={editingBenefit ? editingBenefit.status : "Hoạt động"}
           >
-            <Select>
-              <Option value={true}>Hoạt động</Option>
-              <Option value={false}>Không hoạt động</Option>
+            <Select data-testid = "selectuudai">
+              <Option value={true} data-testid = "activeuudai">Hoạt động</Option>
+              <Option value={false} data-testid = "unactivetuudai" >Không hoạt động</Option>
             </Select>
           </Form.Item>
         </Form>
@@ -1146,6 +1175,7 @@ const handleSave =  async ( ) => {
         visible={isAddBenefitModalVisible}
         onOk={handleOkAddBenefitModal}
         onCancel={() => setIsAddBenefitModalVisible(false)}
+        okButtonProps={{ "data-testid": "okuudai" }}
       >
         <Form form={formAddBenefit} layout="vertical">
           <Form.Item
@@ -1153,9 +1183,9 @@ const handleSave =  async ( ) => {
             label="Mô tả ưu đãi"
             rules={[{ required: true, message: "Vui lòng nhập mô tả ưu đãi" }]}
           >
-            <Input placeholder="Nhập mô tả ưu đãi" />
+            <Input placeholder="Nhập mô tả ưu đãi" data-testid = "inputuudai" />
           </Form.Item>
-          <Form.Item
+          {/* <Form.Item
             name="active"
             label="Trạng thái"
             rules={[{ required: true, message: "Vui lòng chọn trạng thái" }]}
@@ -1164,7 +1194,7 @@ const handleSave =  async ( ) => {
             <Option value={true}>Hoạt động</Option>
             <Option value={false}>Không hoạt động</Option>
             </Select>
-          </Form.Item>
+          </Form.Item> */}
         </Form>
       </Modal>
     </Wrapper>

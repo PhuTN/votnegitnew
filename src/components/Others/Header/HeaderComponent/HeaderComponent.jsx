@@ -141,10 +141,18 @@ const HeaderComponent = () => {
 
   const token = localStorage.getItem("token");
 
+let decodedToken ={}
+  if (token) {
+    decodedToken = jwtDecode(token);
+   // console.log("Thông tin giải mã token:",decodedToken );
+  } else {
+    console.log("Không có token để giải mã.");
+  }
+
 
   let canHover = true;
   let canClick = true;
-  if(!token){
+  if(!(decodedToken.role === "Customer")){
     canClick= false;
   }
 
@@ -152,7 +160,18 @@ const HeaderComponent = () => {
     canHover = false;
   }
   
+  const cart2 = localStorage.getItem("cart");
 
+  let parsedCart ={}
+  if (cart) {
+     
+      parsedCart = JSON.parse(cart2); // Chuyển chuỗi JSON thành đối tượng
+      
+    } else {
+      console.log("Giỏ hàng trống");
+    }
+    console.log("HELLLO",parsedCart)
+    
 
   return (
     <div>
@@ -196,12 +215,17 @@ const HeaderComponent = () => {
           <NewMenu className="menu" >
             {token ? (
               <>
+              
                 <MenuItem2 style={{ width: "100px" }} onClick={handleAccountClick}>
                   <MenuSpan>Trang cá nhân</MenuSpan>
                 </MenuItem2>
-                <Link style={{textDecoration:'none'}} to='/admin'>
+
+                {decodedToken.role !== "Customer" && (
+                <><Link style={{textDecoration:'none'}} to='/admin'>
                   <MenuItem2 style={{width:'100px'}}><MenuSpan>Quản lý web</MenuSpan></MenuItem2>
-                </Link>
+                </Link></>
+              )}
+                
                 <MenuItem2 style={{width:'100px'}} onClick={handleLogout}><MenuSpan>Thoát</MenuSpan></MenuItem2>
               </>
             ) : (
@@ -209,7 +233,7 @@ const HeaderComponent = () => {
               
                   <MenuItem2 style={{width:'100px'}}  onClick={handleLogin}><MenuSpan>Đăng nhập</MenuSpan></MenuItem2>
                
-                <Link style={{textDecoration:'none'}} to='/signin'>
+                <Link style={{textDecoration:'none'}} to='/signup'>
                   <MenuItem2 style={{width:'100px'}}><MenuSpan>Đăng kí</MenuSpan></MenuItem2>
                 </Link>
               </>
@@ -220,8 +244,8 @@ const HeaderComponent = () => {
 
       
         <FunCol style={{ marginRight:'12px', marginLeft:'12px'  , pointerEvents: canHover && canClick ? 'auto' : 'none', }}>
-          <Link style={{textDecoration:'none'}} to='/cart'>
-            <Image width={25} src={cart} preview={false} />
+          <Link style={{textDecoration:'none'}} to='/cart' >
+            <Image width={25} src={cart} preview={false} data-testid = "cartPageBtn" />
             <LowText>GIỎ HÀNG</LowText>
           </Link>
           <NewMenu2 className="menu">

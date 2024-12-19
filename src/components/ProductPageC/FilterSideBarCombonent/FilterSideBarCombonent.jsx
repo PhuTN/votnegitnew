@@ -58,7 +58,7 @@ const FilterSideBarComponent = ({ filters, typeNe }) => {
   };
 
   const defaultKeys = filters.map((filter, index) => index);
-  console.log(checkboxState[typeNe])
+
   return (
     <SidebarContainer>
       <Collapse activeKey={defaultKeys}>

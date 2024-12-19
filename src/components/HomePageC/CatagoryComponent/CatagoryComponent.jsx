@@ -45,7 +45,7 @@ const DiagonalText = styled.div`
 
 const CatagoryComponent = ({ src, text, url }) => {
   return (
-    <Link to = {`/product/${url}`} style={{textDecoration:'none'}}>
+    <Link to = {`/product/${url}`} style={{textDecoration:'none'}} data-testid = {text}>
     <ImageContainer>
       <Image src={src} alt="Image" />
       <DiagonalText>{text}</DiagonalText>

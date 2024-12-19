@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Table, Button, Modal, Input } from 'antd';
+import { Table, Button, Modal, Input, message } from 'antd';
 import OrderProduct from '../OrderProduct/OrderProduct';
+import { jwtDecode } from 'jwt-decode';
 
 const AccountInfoWrapper = styled.div`
   background-color: #FFFFFF;
@@ -115,11 +116,24 @@ const OrderDetailComponent = ({ personalInfo, orderData }) => {
     console.log('Lý do trả hàng:', returnReason);
     setIsModalVisible(false);
     setReturnReason(''); // Reset lý do
+    message.success("Hủy thành công!");
   };
 
   const handleCancel = () => {
     setIsModalVisible(false);
   };
+
+
+  const token = localStorage.getItem("token");
+  
+  let decodedToken ={}
+    if (token) {
+      decodedToken = jwtDecode(token);
+     // console.log("Thông tin giải mã token:",decodedToken );
+    } else {
+      console.log("Không có token để giải mã.");
+    }
+
 
   return (
     <AccountInfoWrapper>
@@ -138,8 +152,9 @@ const OrderDetailComponent = ({ personalInfo, orderData }) => {
   <InfoItem><InfoLabel>Phương thức thanh toán:</InfoLabel> {personalInfo.paymentMethod}</InfoItem>
   <InfoItem><InfoLabel>Trạng thái thanh toán:</InfoLabel> {personalInfo.paymentStatus}</InfoItem>
           <ButtonContainer>
-            <EditButton onClick={showModal}>Trả hàng</EditButton>
-            <EditButton>Hủy</EditButton>
+         { (decodedToken.role === "Customer" && personalInfo.status !== 'Đã hủy' && <EditButton  data-testid = "huy" onClick={showModal}>Hủy</EditButton>)}
+            
+            {/* <EditButton>Hủy</EditButton> */}
           </ButtonContainer>
         </InfoSection>
       </InfoContainer>
@@ -157,12 +172,14 @@ const OrderDetailComponent = ({ personalInfo, orderData }) => {
         onOk={handleOk}
         onCancel={handleCancel}
         centered // Đảm bảo Modal nằm ở giữa màn hình
+        okButtonProps={{ "data-testid": "ok" }}
       >
         <Input.TextArea
           rows={4}
           value={returnReason}
           onChange={(e) => setReturnReason(e.target.value)}
-          placeholder="Nhập lý do trả hàng..."
+          placeholder="Nhập lý do hủy đơn..."
+           data-testid = "liDo"
         />
       </Modal>
     </AccountInfoWrapper>

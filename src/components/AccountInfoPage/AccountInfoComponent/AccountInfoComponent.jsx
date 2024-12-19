@@ -25,12 +25,74 @@ const StyledButton = styled(Button)`
     border-color: #1DA0F1;
   }
 `;
+const validateUsername = (username) => {
+  // Kiểm tra nếu tên chứa chữ số
+  if (/\d/.test(username)) {
+    return "Tên không được chứa chữ số.";
+  }
+
+  // Định nghĩa dãy ký tự hợp lệ (chữ cái không dấu và có dấu, khoảng trắng)
+  const specialChars = /[!@#$%^~&*(),.?":{}|<>/+=_\-\\|;'\[\]<>`]/;
+
+  // Kiểm tra nếu tên chứa ký tự đặc biệt
+  if (specialChars.test(username)) {
+    return "Tên không được chứa ký tự đặc biệt.";
+  }
+
+  // Kiểm tra độ dài tên
+  if (username.length < 2) {
+    return "Tên phải có ít nhất 2 ký tự.";
+  }
+  if (username.length > 50) {
+    return "Tên không được vượt quá 50 ký tự.";
+  }
+
+  return ""; // Tên hợp lệ
+};
+
+
+
+
+const validatePhonenumber = (phoneNumber) => {
+  if (/[^0-9]/.test(phoneNumber)) {
+    return "Số điện thoại chỉ được chứa chữ số.";
+  }
+  if (phoneNumber.length < 10) {
+    return "Số điện thoại phải có ít nhất 10 chữ số.";
+  }
+  if (phoneNumber.length > 10) {
+    return "Số điện thoại không được vượt quá 10 chữ số.";
+  }
+  return ""; // Trả về chuỗi rỗng nếu hợp lệ
+};
+
+
+const validateAddress = (address) => {
+  if (address.length < 10) {
+    return "Địa chỉ phải có ít nhất 10 ký tự.";
+  }
+  if (address.length > 500) {
+    return "Địa chỉ không được vượt quá 500 ký tự.";
+  }
+  return ""; // Địa chỉ hợp lệ
+};
+
+const validateBirthDay = (birthDay) => {
+  const today = new Date(); // Ngày hiện tại
+  const birthDate = new Date(birthDay); // Ngày sinh
+
+  if (birthDate >= today) {
+    return "Ngày sinh phải trước ngày hôm nay.";
+  }
+  return ""; // Ngày sinh hợp lệ
+};
+
 
 const AccountInfoComponent = () => {
   const [form] = Form.useForm(); // Sử dụng form instance của Ant Design
   const [passwordForm] = Form.useForm(); // Form cho phần đổi mật khẩu
   const dispatch = useDispatch();
-
+const [errorMessage, setErrorMessage] = useState('');
   
   const [loading, setLoading] = useState(false); // Để kiểm soát trạng thái loading khi cập nhật
   const [loadingPassword, setLoadingPassword] = useState(false); // Để kiểm soát trạng thái loading khi đổi mật khẩu
@@ -58,7 +120,7 @@ const AccountInfoComponent = () => {
   useEffect(() => {
     if (user) {
       form.setFieldsValue({
-        email: user?.email || '',
+        address: user?.address || '',
         username: user?.username || '',
         phoneNumber: user?.phoneNumber || '',
         gender: user?.gender || '',
@@ -73,6 +135,32 @@ const AccountInfoComponent = () => {
     try {
       const values = await form.validateFields(); // Validate các trường trong form
       const userId = user?._id; // Lấy userId từ dữ liệu user đã có
+
+
+      const usernameError = validateUsername(values.username);
+  if (usernameError) {
+    setErrorMessage(usernameError)
+    return;
+  }
+
+  
+  const  phoneError = validatePhonenumber(values.phoneNumber);
+  if(phoneError){
+    setErrorMessage(phoneError)
+    return;
+  }
+  const addressError = validateAddress(values.address);
+  if(addressError){
+    setErrorMessage(addressError)
+    return;
+  }
+
+  const birthError = validateBirthDay(values.dateOfBirth);
+  if(birthError){
+    setErrorMessage(birthError)
+    return;
+  }
+  
   
       if (userId) {
         const updatedUserData = {
@@ -144,23 +232,24 @@ console.log(user)
         form={form} 
         layout="vertical"
         initialValues={{
-          email: '',
+          address: '',
           username: '',
           phoneNumber: '',
           gender: '',
           dateOfBirth: null,
         }}
       >
-        <Form.Item label="Email" name="email">
-          <Input placeholder="Email" />
-        </Form.Item>
+        
         <Form.Item label="Họ tên" name="username">
           <Input placeholder="Họ tên" />
         </Form.Item>
+        
         <Form.Item label="Số điện thoại" name="phoneNumber">
           <Input placeholder="Số điện thoại" />
         </Form.Item>
-
+        <Form.Item label="Địa chỉ" name="address">
+          <Input placeholder="Địa chỉ" />
+        </Form.Item>
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item label="Giới tính" name="gender">
@@ -180,7 +269,7 @@ console.log(user)
             </Form.Item>
           </Col>
         </Row>
-
+        {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
         <StyledButton 
           type="primary" 
           loading={loading || status === 'loading'} // Hiển thị loading nếu đang cập nhật
@@ -188,9 +277,10 @@ console.log(user)
         >
           CẬP NHẬT
         </StyledButton>
+       
       </Form>
 
-      <Title level={4} style={{ marginTop: '30px' }}>Đổi mật khẩu</Title>
+      {/* <Title level={4} style={{ marginTop: '30px' }}>Đổi mật khẩu</Title>
       <Form form={passwordForm} layout="vertical">
         <Form.Item 
           label="Mật khẩu hiện tại" 
@@ -217,7 +307,7 @@ console.log(user)
         >
           ĐỔI MẬT KHẨU
         </StyledButton>
-      </Form>
+      </Form> */}
     </Container>
   );
 };

@@ -1,17 +1,32 @@
-// ProtectedRoute.js
 import React from "react";
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
+import {jwtDecode} from "jwt-decode"; // Cài thư viện jwt-decode
 
-const ProtectedRoute = ({ children }) => {
+const ProtecedRoute = ({ children, allowedRoles }) => {
+  const getAuthToken = () => {
+    return localStorage.getItem("token"); // Lấy token từ localStorage
+  };
 
+  const token = getAuthToken();
 
-    const getAuthToken = () => {
-        return localStorage.getItem("token"); // Hoặc từ Redux store nếu bạn sử dụng Redux để lưu token
-      };
-  const token = getAuthToken(); // Lấy token từ Redux Store
+  if (!token) {
+    return <Navigate to="/login" />; // Chuyển hướng nếu không có token
+  }
 
-  return token ? children : <Navigate to="/login" />; // Chuyển hướng đến trang đăng nhập nếu chưa xác thực
+  try {
+    const decodedToken = jwtDecode(token); // Giải mã token
+    const userRole = decodedToken.role; // Lấy role từ token
+
+    if (!allowedRoles.includes(userRole)) {
+      return <div>Bạn không có quyền vào trang này</div>; // Thông báo nếu không có quyền
+    }
+
+    return children; // Hiển thị nội dung nếu hợp lệ
+  } catch (error) {
+    console.error("Token không hợp lệ", error);
+    return <Navigate to="/login" />;
+  }
 };
 
-export default ProtectedRoute;
+export default ProtecedRoute;

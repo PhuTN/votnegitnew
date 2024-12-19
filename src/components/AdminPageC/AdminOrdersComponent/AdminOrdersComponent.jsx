@@ -131,7 +131,7 @@ const AdminOrdersComponent = () => {
         return order;
       });
       setFilteredData(updatedOrders);
-      message.success(`Cập nhật trạng thái đơn hàng ${orderId} thành công!`);
+      message.success(`Cập nhật trạng thái đơn hàng thành công!`);
     }
   };
   const handleCancelReasonSubmit = (orderId) => {
@@ -196,12 +196,13 @@ const AdminOrdersComponent = () => {
           defaultValue={status}
           style={{ width: 150 }}
           onChange={(value) => handleStatusChange(record._id, value)}
+          data-testid = {record.id}
         >
-          <Select.Option value="Chờ xử lý">Chờ xử lý</Select.Option>
-          <Select.Option value="Đang xử lý">Đang xử lý</Select.Option>
-          <Select.Option value="Đang giao hàng">Đang giao hàng</Select.Option>
-          <Select.Option value="Đã giao">Đã giao</Select.Option>
-          <Select.Option value="Đã hủy">Đã hủy</Select.Option>
+          <Select.Option   value="Chờ xử lý">Chờ xử lý</Select.Option>
+          <Select.Option data-testid = "xacNhan" value="Đang xử lý">Đã xác nhận</Select.Option>
+          <Select.Option data-testid = "dangGiao" value="Đang giao hàng">Đang giao hàng</Select.Option>
+          <Select.Option data-testid = "daGiao" value="Đã giao">Đã giao</Select.Option>
+          <Select.Option data-testid = "daHuy" value="Đã hủy">Đã hủy</Select.Option>
         </Select>
       ),
     },
@@ -214,8 +215,8 @@ const AdminOrdersComponent = () => {
           <Tooltip title="Xem chi tiết sản phẩm">
             <Button onClick={() => handleViewProducts(record._id) } style={{ marginRight: 10 }}>Xem sản phẩm</Button>
           </Tooltip>
-          <Tooltip title="Xem chi tiết đơn hàng">
-            <Button onClick={() => handleRowClick(record)}>Xem đơn hàng</Button>
+          <Tooltip   title="Xem chi tiết đơn hàng">
+            <Button data-testid = {`xem ${record.id}`} onClick={() => handleRowClick(record)}>Xem đơn hàng</Button>
           </Tooltip>
         </>
       ),
@@ -265,7 +266,7 @@ const AdminOrdersComponent = () => {
     } catch (error) {
       console.error("Failed to update order:", error);
     }
-    message.success("Changes saved!");
+    message.success("Lưu thành công!");
   };
   return (
     <div>
@@ -274,7 +275,7 @@ const AdminOrdersComponent = () => {
           <Select defaultValue="id" onChange={handleCategoryChange} style={{ width: "100%" }}>
             <Select.Option value="id">ID</Select.Option>
             <Select.Option value="name">Tên khách hàng</Select.Option>
-            <Select.Option value="phonumber">Số điện thoại</Select.Option>
+            <Select.Option value="phonumber">Số điononện thoại</Select.Option>
             <Select.Option value="address">Địa chỉ</Select.Option>
           </Select>
         </Col>
@@ -286,8 +287,8 @@ const AdminOrdersComponent = () => {
           />
         </Col>
         <Col span={2}>
-          <Button onClick={() => handleSave(transformToDesiredFormat(filteredData))} type="primary" style={{ width: "100%" }}>
-            Save
+          <Button data-testid = "luu" onClick={() => handleSave(transformToDesiredFormat(filteredData))} type="primary" style={{ width: "100%" }}>
+            Lưu
           </Button>
         </Col>
         <Col span={6}>
@@ -338,17 +339,20 @@ const AdminOrdersComponent = () => {
   visible={isCancelModalVisible}
   onCancel={() => setIsCancelModalVisible(false)}
   onOk={() => handleCancelReasonSubmit(selectedOrder?._id)}
+  okButtonProps={{ "data-testid": "ok" }}
 >
   <Form>
     <Form.Item
       label="Lý do hủy"
       name="cancelReason"
       rules={[{ required: true, message: "Vui lòng nhập lý do hủy!" }]}
+      
     >
       <Input.TextArea
         value={cancelReason}
         onChange={(e) => setCancelReason(e.target.value)}
         rows={4}
+        data-testid = "liDo"
       />
     </Form.Item>
   </Form>

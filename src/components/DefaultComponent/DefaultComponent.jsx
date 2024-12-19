@@ -1,18 +1,19 @@
-import React from 'react'
-import HeaderComponent from '../Others/Header/HeaderComponent/HeaderComponent'
-import MainMenuComponent from '../Others/Header/MainMenuComponent/MainMenuComponent'
-import FooterComponent from '../Others/Footer/FooterComponent/FooterComponent'
-import { Footer } from 'antd/es/layout/layout'
+import React from 'react';
+import HeaderComponent from '../Others/Header/HeaderComponent/HeaderComponent';
+import MainMenuComponent from '../Others/Header/MainMenuComponent/MainMenuComponent';
+import FooterComponent from '../Others/Footer/FooterComponent/FooterComponent';
 
-const DefaultComponent = ({children}) => {
+const DefaultComponent = ({ children }) => {
   return (
-    <div>
-    <HeaderComponent></HeaderComponent>
-    <MainMenuComponent></MainMenuComponent>
-    {children}
-    <FooterComponent></FooterComponent>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <HeaderComponent />
+      <MainMenuComponent />
+      <div style={{ flex: 1 }}>
+        {children}
+      </div>
+      <FooterComponent />
     </div>
-  )
-}
+  );
+};
 
-export default DefaultComponent
+export default DefaultComponent;

@@ -45,6 +45,19 @@ const ProductDetailPage = () => {
   const { product, status, error } = useSelector((state) => state.products);
   const { attributes, status2, error2 } = useSelector((state) => state.attributes);
 
+
+
+
+  const filteredAttributes = attributes
+  .filter(attr => attr.active) // Lọc các attribute có active: true
+  .map(attr => ({
+    ...attr,
+    values: attr.values.filter(value => value.active), // Lọc các value có active: true
+  }))
+  .filter(attr => attr.values.length > 0); // Loại bỏ các attribute không có value nào active
+
+
+
   useEffect(() => {
     dispatch(fetchProductById(productName));  
   }, [dispatch, productName]);
@@ -88,7 +101,7 @@ const ProductDetailPage = () => {
     }).filter(item => item !== null) || [];
   }
 
-  const result = mapAttributesToValues(product, attributes);
+  const result = mapAttributesToValues(product, filteredAttributes);
 
   const transformedData = result?.map((item) => ({
     label: item.attribute.name,
@@ -118,9 +131,9 @@ const ProductDetailPage = () => {
             />
             <StyledProductDetails product={productData} />
           </LeftSection>
-          <RightSection>
+          {/* <RightSection>
             <SideBarProductType defaultActiveKey={[0]} />
-          </RightSection>
+          </RightSection> */}
         </Container>
       </ContainerWrapper>
     </div>

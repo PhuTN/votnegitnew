@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Input, Button, Radio, Space, Card } from 'antd';
+import { Input, Button, Radio, Space, Card, message } from 'antd';
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { createOrder } from '../../../redux/Slicer/orderSlice';
 import {jwtDecode} from 'jwt-decode';
@@ -116,13 +116,19 @@ const PaymentComponent = ({ products }) => {
     paymentMethod: paymentMethod, // Lấy giá trị từ Radio button
     paymentStatus: "Chưa Thanh Toán",
   };
-
+const navigate = useNavigate();
   const handleSubmit = async (e) => {
+    
     e.preventDefault();
     try {
       const result = await dispatch(createOrder(orderData)).unwrap();
       console.log("Order created successfully:", result);
-      alert("Order created successfully!");
+      message.success("Đặt hàng thành công!");
+      setTimeout(() => {
+        navigate('/account');
+        window.location.reload();
+      }, 3000); // Chuyển hướng sau 3 giây
+      
     } catch (err) {
       console.error("Error creating order:", err);
       alert("Failed to create order.");
@@ -144,6 +150,7 @@ const PaymentComponent = ({ products }) => {
             placeholder="Ghi chú đơn hàng (tùy chọn)"
             value={orderNote}
             onChange={(e) => setOrderNote(e.target.value)}
+            data-testid = "ghichu"
           />
         </Space>
 
@@ -154,8 +161,8 @@ const PaymentComponent = ({ products }) => {
           style={{ width: '100%' }}
         >
           <Space direction="vertical" style={{ width: '100%' }}>
-            <Radio value="Ship Cod">Thanh toán khi nhận hàng (COD)</Radio>
-            <Radio value="Chuyển Khoản">Thanh toán qua ngân hàng</Radio>
+            <Radio value="Ship Cod" data-testid = "shipcod">Thanh toán khi nhận hàng (COD)</Radio>
+            <Radio value="Chuyển Khoản" data-testid = "chuyenkhoan">Thanh toán qua ngân hàng</Radio>
           </Space>
         </Radio.Group>
       </FormSection>
@@ -181,7 +188,7 @@ const PaymentComponent = ({ products }) => {
             <Link to="/cart" style={{ textDecoration: 'none' }}>
               <Button style={{ flex: 1 }}>Sửa giỏ hàng</Button>
             </Link>
-            <Button type="primary" style={{ flex: 1 }} onClick={handleSubmit}>
+            <Button type="primary" style={{ flex: 1 }} onClick={handleSubmit} data-testid = "dat">
               ĐẶT HÀNG
             </Button>
           </Space>

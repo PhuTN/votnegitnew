@@ -51,16 +51,18 @@ const extractProductDetails = (products) => {
 
   const initialCartItems = () => {
     const localCartItems = localStorage.getItem("cartItems");
-    if (localCartItems) {
+    if (JSON.parse(localCartItems) && JSON.parse(localCartItems)?.length !== 0) {
+        console.log("DCCCCM")
         return JSON.parse(localCartItems);
     }
     localStorage.setItem("cartItems", JSON.stringify(result || []));
     return result || [];
 };
 
+
   
 
-    const [cartItems, setCartItems] = useState(initialCartItems);
+    const [cartItems, setCartItems] = useState(initialCartItems());
 
     useEffect(() => {
         localStorage.setItem("cartItems", JSON.stringify(cartItems));

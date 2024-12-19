@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Table, Button } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 const AccountInfoWrapper = styled.div`
   background-color: #FFFFFF;
@@ -75,7 +76,7 @@ const columns = [
     title: 'Ngày Đặt',
     dataIndex: 'dayorder',
     key: 'dayorder',
-    render: (date) => new Date(date).toLocaleString(),
+    render: (date) => new Date(date)?.toLocaleString(),
   },
   {
     title: 'Địa chỉ',
@@ -86,7 +87,7 @@ const columns = [
     title: 'Tổng Giá',
     dataIndex: 'totalPrice',
     key: 'totalPrice',
-    render: (price) => `${price.toLocaleString()} VNĐ`,
+    render: (price) => `${price?.toLocaleString()} VNĐ`,
   },
   {
     title: 'Trạng Thái',
@@ -118,13 +119,25 @@ const columns = [
     dataIndex: 'paymentStatus',
     key: 'paymentStatus',
   },
+  {
+    title: "Lý do hủy khách hàng",
+    dataIndex: "location",
+    key: "location",
+   
+  },
+  {
+    title: "Lý do hủy của shop",
+    dataIndex: "cancelReason",
+    key: "cancelReason",
+   
+  },
 ];
 
 const AccountComponent = ({ personalInfo, orderData }) => {
   const navigate = useNavigate();
-console.log(orderData[0]?.dayorder)
+console.log(orderData)
   const formattedOrderData = orderData.map((order) => {
-    const totalPrice = order.products.reduce((sum, product) => sum + product.price * product.number, 0);
+    const totalPrice = order?.products?.reduce((sum, product) => sum + product.price * product.number, 0);
     return { 
       id: order.id,
       dayorder: order.dayorder,
@@ -137,9 +150,22 @@ console.log(orderData[0]?.dayorder)
       description: order.description,
       paymentMethod: order.paymentMethod,
       paymentStatus: order.paymentStatus,
+      location: order.location,
+      cancelReason: order.cancelReason,
     };
     
   });
+
+  const token = localStorage.getItem("token");
+  
+  let decodedToken ={}
+    if (token) {
+      decodedToken = jwtDecode(token);
+     // console.log("Thông tin giải mã token:",decodedToken );
+    } else {
+      console.log("Không có token để giải mã.");
+    }
+  
 
   return (
     <AccountInfoWrapper>
@@ -160,7 +186,7 @@ console.log(orderData[0]?.dayorder)
           </Link>
         </InfoSection>
       </InfoContainer>
-
+{(decodedToken.role === "Customer" &&
       <OrderContainer>
         <Header>ĐƠN HÀNG CỦA BẠN</Header>
         <InfoSection>
@@ -176,6 +202,7 @@ console.log(orderData[0]?.dayorder)
           />
         </InfoSection>
       </OrderContainer>
+)}
     </AccountInfoWrapper>
   );
 };

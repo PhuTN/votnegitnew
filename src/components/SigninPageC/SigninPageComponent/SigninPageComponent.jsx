@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react'; 
 import styled from 'styled-components';
-import { Input, Button, Typography } from 'antd';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Input, Button, Typography, message } from 'antd';
+import { useDispatch } from 'react-redux';
+import { createUser, verifyUser, resendVerificationCode } from '../../../redux/Slicer/userSlice'; // Import các hàm từ slice của bạn
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+
 const { Link } = Typography;
 
 const RegisterWrapper = styled.div`
@@ -56,68 +58,199 @@ const RegisterText = styled.div`
 const StyledLink = styled(Link)`
   color: #f4511e;
 `;
+const validateUsername = (username) => {
+  // Kiểm tra nếu tên chứa chữ số
+  if (/\d/.test(username)) {
+    return "Tên không được chứa chữ số.";
+  }
+
+  // Định nghĩa dãy ký tự hợp lệ (chữ cái không dấu và có dấu, khoảng trắng)
+  const specialChars = /[!@#$%^~&*(),.?":{}|<>/+=_\-\\|;'\[\]<>`]/;
+
+  // Kiểm tra nếu tên chứa ký tự đặc biệt
+  if (specialChars.test(username)) {
+    return "Tên không được chứa ký tự đặc biệt.";
+  }
+
+  // Kiểm tra độ dài tên
+  if (username.length < 2) {
+    return "Tên phải có ít nhất 2 ký tự.";
+  }
+  if (username.length > 50) {
+    return "Tên không được vượt quá 50 ký tự.";
+  }
+
+  return ""; // Tên hợp lệ
+};
+
+
+
+
+const validatePhonenumber = (phoneNumber) => {
+  if (/[^0-9]/.test(phoneNumber)) {
+    return "Số điện thoại chỉ được chứa chữ số.";
+  }
+  if (phoneNumber.length < 10) {
+    return "Số điện thoại phải có ít nhất 10 chữ số.";
+  }
+  if (phoneNumber.length > 10) {
+    return "Số điện thoại không được vượt quá 10 chữ số.";
+  }
+  return ""; // Trả về chuỗi rỗng nếu hợp lệ
+};
+
+const validatePassword = (password) => {
+  // Kiểm tra độ dài mật khẩu
+  if (password.length < 8) {
+    return "Mật khẩu phải có ít nhất 8 ký tự.";
+  }
+  if (password.length > 128) {
+    return "Mật khẩu không được vượt quá 128 ký tự.";
+  }
+  
+  // Kiểm tra mật khẩu không chứa ký tự đặc biệt
+  if (!/[!@#$%^~&*(),.?":{}|<>/+=_\-\\|;'\[\]<>`]/.test(password)) {
+    return "Mật khẩu phải chứa ít nhất một ký tự đặc biệt.";
+  }
+
+  // Kiểm tra mật khẩu không chứa chữ cái in hoa
+  if (!/[A-Z]/.test(password)) {
+    return "Mật khẩu phải chứa ít nhất một chữ cái in hoa.";
+  }
+
+  // Kiểm tra mật khẩu không chứa chữ cái thường
+  if (!/[a-z]/.test(password)) {
+    return "Mật khẩu phải chứa ít nhất một chữ cái thường.";
+  }
+
+  // Kiểm tra mật khẩu không chứa số
+  if (!/[0-9]/.test(password)) {
+    return "Mật khẩu phải chứa ít nhất một số.";
+  }
+
+  return ""; // Trả về chuỗi rỗng nếu mật khẩu hợp lệ
+};
+
 
 const SigninPageComponent = () => {
-  const navigate = useNavigate();
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [userName, setUsername] = useState('')
-  const [password, setPassWord] = useState("")
-  const [password2, setPassWord2] = useState("")
-  const handleSignUp = () => {
-    if (!name){
-      alert("Vui lòng nhập tên người dùng")
-      return
-    }
-    if (!email.match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) {
-      alert("Email không hợp lệ")
-      return
-  }
-  if (!phone.match(/(03|05|07|08|09|01[2|6|8|9])+([0-9]{8})\b/)) {
-      alert("Số điện thoại không hợp lệ")
-      return
-  }
-  if (!userName){
-    alert("Vui lòng nhập tên đăng nhập")
-    return
-  }
-  if (password !== password2 )
-      {
-          alert("Mật khẩu không trùng khớp")
-          return 
-      }
-  // if (password.length < 5)
-  //     {
-  //         alert("Yêu cầu mật khẩu ít nhất 5 ký tự")
-  //         return
-  //     }
+  const dispatch = useDispatch();
+  const navigate = useNavigate(); // Khai báo useNavigate
 
-    fetch("http://localhost:8081/v1/api/signUp", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: name,
-        email: email,
-        phone: phone,
-        username: userName,
-        password: password,
-      }),
-    })
-      .then((res) => res.json())
-      .then((res) => {
-        console.log(res)
-        if (res.success === false) {
-          localStorage.clear();
-          alert("Mời đăng ký lại, dữ liệu đã nhập trùng");
-        } else {
-          alert("Tạo tài khoản thành công, mời đăng nhập");
-          navigate("/login");
-        }
-      })
-      .catch((err) => console(err));
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [userName, setUsername] = useState('');
+  const [password, setPassWord] = useState('');
+  const [password2, setPassWord2] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isVerified, setIsVerified] = useState(false); // Trạng thái xác thực
+
+  // Tạo ID duy nhất (Có thể thay đổi logic tạo ID tùy vào nhu cầu)
+  const generateUserId = () => {
+    return `user_${new Date().getTime()}_${Math.floor(Math.random() * 1000)}`;
+  };
+
+  const validateEmail = (email) => {
+    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return regex.test(email);
+  };
+
+  const handleSignUp = async () => {
+    // Reset trạng thái lỗi trước khi xử lý
+    setErrorMessage('');
+
+    const usernameError = validateUsername(userName);
+  if (usernameError) {
+    setErrorMessage(usernameError)
+    return;
+  }
+
+  
+  const  phoneError = validatePhonenumber(phone);
+  if(phoneError){
+    setErrorMessage(phoneError)
+    return;
+  }
+
+  
+  if (!validateEmail(email)) {
+    setErrorMessage('Email không hợp lệ!');
+    return;
+  }
+    
+  const  passwordError = validatePassword(password);
+  if(passwordError){
+    setErrorMessage(passwordError)
+    return;
+  }
+
+  
+
+    if (password !== password2) {
+      setErrorMessage('Mật khẩu không khớp!');
+      return;
+    }
+  
+    setLoading(true);
+  
+    const newUser = { 
+      id: generateUserId(), 
+      
+      email,
+      phone,
+      username: userName,
+      password
+    };
+  
+    try {
+      const result = await dispatch(createUser(newUser)).unwrap(); // unwrap để lấy dữ liệu trực tiếp
+      message.success('Vui lòng kiểm tra email để xác thực tài khoản.');
+      setLoading(false);
+      setIsVerified(true); // Hiển thị form xác thực chỉ khi đăng ký thành công
+      
+     
+    } catch (error) {
+      setLoading(false);
+      setErrorMessage(error?.message || 'Đã xảy ra lỗi khi đăng ký.');
+      setIsVerified(false); // Đảm bảo không chuyển sang form xác thực nếu có lỗi
+    }
+  };
+  
+
+  const handleVerify = async () => {
+    setVerificationLoading(true);
+    try {
+      const result = await dispatch(verifyUser({ email, verificationCode })).unwrap();
+      console.log(result)
+      if(result === "err"){
+        setErrorMessage('Mã xác thực không đúng!');
+        setVerificationLoading(false);
+        return ;
+      }
+
+      setVerificationLoading(false);
+      message.success('Xác thực tài khoản thành công!');
+      navigate('/login'); // Chuyển hướng đến trang đăng nhập khi xác thực thành công
+    } catch (error) {
+      setVerificationLoading(false);
+      setErrorMessage(error.message || 'Lỗi xác thực.');
+   
+    }
+  };
+
+  const handleResendVerificationCode = async () => {
+    setVerificationLoading(true);
+    try {
+      await dispatch(resendVerificationCode(email));
+      setVerificationLoading(false);
+      message.success('Mã xác thực đã được gửi lại!');
+    } catch (error) {
+      setVerificationLoading(false);
+      setErrorMessage(error.message || 'Lỗi khi gửi lại mã xác thực.');
+      
+    }
   };
 
   return (
@@ -127,13 +260,37 @@ const SigninPageComponent = () => {
       <RegisterText>
         Đã có tài khoản, đăng nhập <StyledLink href="#">tại đây</StyledLink>
       </RegisterText>
-      <StyledInput value={name} onChange={(e) => setName(e.target.value)} placeholder="Nhập tên của bạn (*)" />
-      <StyledInput value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Nhập email của bạn (*)" />
-      <StyledInput value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Nhập số điện thoại" />
-      <StyledInput value={userName} onChange={(e) => setUsername(e.target.value)} placeholder="Nhập tên đăng nhập (*)" />
-      <StyledInput value={password} onChange={(e) => setPassWord(e.target.value)} type="password" placeholder="Mật khẩu" />
-      <StyledInput value={password2} onChange={(e) => setPassWord2(e.target.value)} type="password" placeholder="Nhập lại mật khẩu" />
-      <StyledButton type="primary" onClick={handleSignUp} > ĐĂNG KÝ</StyledButton>
+
+      {/* Form đăng ký */}
+      {!isVerified ? (
+        <>
+          <StyledInput value={userName} onChange={(e) => setUsername(e.target.value)} placeholder="Nhập tên của bạn (*)" />
+          <StyledInput value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Nhập email của bạn (*)" />
+          <StyledInput value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Nhập số điện thoại" />
+      
+          <StyledInput value={password} onChange={(e) => setPassWord(e.target.value)} type="password" placeholder="Mật khẩu" />
+          <StyledInput value={password2} onChange={(e) => setPassWord2(e.target.value)} type="password" placeholder="Nhập lại mật khẩu" />
+          <StyledButton type="primary" onClick={handleSignUp} loading={loading}> ĐĂNG KÝ</StyledButton>
+        </>
+      ) : (
+        <>
+          {/* Form xác thực */}
+          <StyledInput 
+            value={verificationCode} 
+            onChange={(e) => setVerificationCode(e.target.value)} 
+            placeholder="Nhập mã xác thực" 
+          />
+          <StyledButton type="primary" onClick={handleVerify} loading={verificationLoading}>
+            XÁC THỰC
+          </StyledButton>
+          <StyledButton type="link" onClick={handleResendVerificationCode} loading={verificationLoading}>
+            Gửi lại mã xác thực
+          </StyledButton>
+        </>
+      )}
+      
+      {/* Hiển thị thông báo lỗi nếu có */}
+      {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
     </RegisterWrapper>
   );
 };

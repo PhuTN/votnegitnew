@@ -102,7 +102,7 @@ const ProductItem = ({ product }) => {
     return new Intl.NumberFormat('vi-VN').format(value);
   };
   return (
-    <ProductCard>
+    <ProductCard >
       {discountPercentage > 0 && <DiscountBadge>-{discountPercentage}%</DiscountBadge>}
       <ProductImage src={color.images[0]} alt={product.name} />
       <ProductTitle>{product.name}</ProductTitle>
@@ -165,7 +165,7 @@ const ProductGridComponent = ({ title, products }) => {
     
       <ProductGrid>
         {currentProducts.map((product) => (
-          <Link to={`/product/product-detail/${product._id}`} style={{ textDecoration: 'none' }} key={product._id}>
+          <Link to={`/product/product-detail/${product._id}`} data-testid = {product.name} style={{ textDecoration: 'none' }} key={product._id}>
             <ProductItem product={product} />
           </Link>
         ))}

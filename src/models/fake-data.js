@@ -63,6 +63,7 @@ export const columnsProduct = [
                   icon={<EditOutlined />}
                   onClick={() => console.log('Edit', record)}
                   style={{ backgroundColor: '#2ecc71', borderColor: '#2ecc71', color: '#fff' }}
+                  data-testid={`${record.productID}`} 
               />
           </Space>
       ),

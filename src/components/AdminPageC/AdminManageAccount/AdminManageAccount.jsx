@@ -1,21 +1,61 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';  
 import { Modal, Table, Button, Select, Input, Row, Col, Form, message } from 'antd';
-import { EditOutlined, UndoOutlined } from '@ant-design/icons'; // Importing necessary icons
-import AdminTableComponent from '../AdminTableComponent/AdminTableComponent';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchAllUsers, updateAllUsers } from '../../../redux/Slicer/userSlice'; // addUser action to handle new user addition
+import { fetchAllUsers, updateAllUsers, addStaff } from '../../../redux/Slicer/userSlice'; // Import addStaff action
+import AdminTableComponent from '../AdminTableComponent/AdminTableComponent';
 
 const AdminManageAccount = () => {
   const dispatch = useDispatch();
+   const [errorMessage, setErrorMessage] = useState('');
   const { users, status, error } = useSelector((state) => state.user);
-
+  const validateUsername = (username) => {
+    // Kiểm tra nếu tên chứa chữ số
+    if (/\d/.test(username)) {
+      return "Tên không được chứa chữ số.";
+    }
+  
+    // Định nghĩa dãy ký tự hợp lệ (chữ cái không dấu và có dấu, khoảng trắng)
+    const specialChars = /[!@#$%^~&*(),.?":{}|<>/+=_\-\\|;'\[\]<>`]/;
+  
+    // Kiểm tra nếu tên chứa ký tự đặc biệt
+    if (specialChars.test(username)) {
+      return "Tên không được chứa ký tự đặc biệt.";
+    }
+  
+    // Kiểm tra độ dài tên
+    if (username.length < 2) {
+      return "Tên phải có ít nhất 2 ký tự.";
+    }
+    if (username.length > 50) {
+      return "Tên không được vượt quá 50 ký tự.";
+    }
+  
+    return ""; // Tên hợp lệ
+  };
+  
+  
+  
+  
+  const validatePhonenumber = (phoneNumber) => {
+    if (/[^0-9]/.test(phoneNumber)) {
+      return "Số điện thoại chỉ được chứa chữ số.";
+    }
+    if (phoneNumber.length < 10) {
+      return "Số điện thoại phải có ít nhất 10 chữ số.";
+    }
+    if (phoneNumber.length > 10) {
+      return "Số điện thoại không được vượt quá 10 chữ số.";
+    }
+    return ""; // Trả về chuỗi rỗng nếu hợp lệ
+  };
+  
   useEffect(() => {
     dispatch(fetchAllUsers());
   }, [dispatch]);
 
   const orderCategories = [
     { label: 'ID', value: 'id' },
-    { label: 'Loại', value: 'type' },
+    { label: 'Loại', value: 'role' },
     { label: 'Tên tài khoản', value: 'username' },
     { label: 'Số điện thoại', value: 'phoneNumber' },
     { label: 'Địa chỉ', value: 'address' },
@@ -38,12 +78,43 @@ const AdminManageAccount = () => {
     setSelectedCategory(value); 
   };
 
-  const handleSearch = (searchText) => { 
-    const filtered = users.filter((item) => { 
-      const columnKey = selectedCategory; 
-      return item[columnKey] && item[columnKey].toString().toLowerCase().includes(searchText.toLowerCase()); 
-    }); 
-    setFilteredData(filtered); 
+  const handleSearch = (searchText) => {
+    const filtered = users.filter((item) => {
+      const columnKey = selectedCategory;
+  
+      // Dữ liệu thô
+      let columnValue = item[columnKey];
+  
+      // Xử lý theo `render` nếu cần thiết
+      if (columnKey === "gender") {
+        columnValue = item[columnKey] === "Male" ? "Nam" : "Nữ";
+      } else if (columnKey === "isActive") {
+        columnValue = item[columnKey] ? "Hoạt động" : "Không hoạt động";
+      } else if (columnKey === "role") {
+        switch (item[columnKey]) {
+          case "Admin":
+            columnValue = "Quản trị viên";
+            break;
+          case "Customer":
+            columnValue = "Khách hàng";
+            break;
+          case "Seller":
+            columnValue = "Nhân viên bán hàng";
+            break;
+          case "WarehouseStaff":
+            columnValue = "Nhân viên kho";
+            break;
+          default:
+            columnValue = "Không xác định";
+        }
+      } else if (columnKey === "dateOfBirth") {
+        columnValue = item[columnKey] ? new Date(item[columnKey]).toLocaleDateString() : "";
+      }
+  
+      return columnValue && columnValue.toString().toLowerCase().includes(searchText.toLowerCase());
+    });
+  
+    setFilteredData(filtered);
   };
 
   const handleStatusChange = (userId, status) => {
@@ -55,17 +126,37 @@ const AdminManageAccount = () => {
       return user;
     });
     setFilteredData(updatedUsers);
+    if(status !== 'Hoạt động'){
+      message.success('Vô hiệu hóa tài khoản thành công!');
+    }
   };
-
+  const validateEmail = (email) => {
+    const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return regex.test(email);
+  };
   const columnsOrder = [
     { title: 'ID', dataIndex: 'id', key: 'id', align: 'left' },
-    { 
-      title: 'Loại', 
-      dataIndex: 'role', 
-      key: 'role', 
+    {
+      title: 'Loại',
+      dataIndex: 'role',
+      key: 'role',
       align: 'left',
-      render: (role) => role === 'Admin' ? 'Quản trị viên' : 'Khách hàng',
-    },
+      render: (role) => {
+        switch (role) {
+          case 'Admin':
+            return 'Quản trị viên';
+          case 'Customer':
+            return 'Khách hàng';
+          case 'Seller':
+            return 'Nhân viên bán hàng';
+          case 'WarehouseStaff':
+            return 'Nhân viên kho';
+          default:
+            return 'Không xác định';
+        }
+      },
+    }
+    ,
     { title: 'Tên tài khoản', dataIndex: 'username', key: 'username', align: 'left' },
     { title: 'Số điện thoại', dataIndex: 'phoneNumber', key: 'phoneNumber', align: 'left' },
     { title: 'Địa chỉ', dataIndex: 'address', key: 'address', align: 'left' },
@@ -94,9 +185,10 @@ const AdminManageAccount = () => {
           defaultValue={isActive ? 'Hoạt động' : 'Không hoạt động'}
           style={{ width: 120 }}
           onChange={(value) => handleStatusChange(record.id, value)}
+          data-testid = {record.id}
         >
           <Select.Option value="active">Hoạt động</Select.Option>
-          <Select.Option value="inactive">Không hoạt động</Select.Option>
+          <Select.Option data-testid = "unactive" value="inactive">Không hoạt động</Select.Option>
         </Select>
       ),
     },
@@ -105,7 +197,7 @@ const AdminManageAccount = () => {
   const handleSave = async () => {
     try {
       await dispatch(updateAllUsers(filteredData)); 
-      message.success("Changes saved!");
+      message.success("Lưu thành công");
     } catch (error) {
       console.error("Failed to update users:", error);
     }
@@ -113,15 +205,55 @@ const AdminManageAccount = () => {
 
   // Modal logic for adding a user
   const handleAddUser = async (values) => {
-    // try {
-    //   await dispatch(addUser(values)); // Assuming addUser handles adding the user in Redux
-    //   setIsModalVisible(false);
-    //   message.success('User added successfully!');
-    //   form.resetFields();
-    // } catch (error) {
-    //   console.error("Failed to add user:", error);
-    //   message.error('Failed to add user');
-    // }
+    const usernameError = validateUsername(values.username|| '' );
+    if (usernameError) {
+      setErrorMessage(usernameError)
+      return;
+    }
+  
+    
+    const  phoneError = validatePhonenumber(values.phoneNumber || '');
+    if(phoneError){
+      setErrorMessage(phoneError)
+      return;
+    }
+  
+    
+    if (!validateEmail(values.email)) {
+      setErrorMessage('Email không hợp lệ!');
+      return;
+    }
+    try {
+      const newUser = {
+        id: Date.now(),  // Tạo ID tự động bằng cách sử dụng thời gian hiện tại
+        email: values.email,
+        username: values.username,
+        password: 'Password@123',  // Mật khẩu mặc định
+        role: values.role || "Admin",
+        phoneNumber: values.phoneNumber || '',  // Nếu không có số điện thoại thì để trống
+      };
+      console.log(newUser)
+      // Dispatch addStaff to add a new user
+      const result = await dispatch(addStaff(newUser)).unwrap()
+      if(result === "er"){
+        setErrorMessage('Email đã được tài khoản khác đăng ký');
+        form.resetFields();
+
+      // Reload the user list to reflect the newly added user
+      dispatch(fetchAllUsers()); // Refresh user list
+        return ;
+      }
+
+      setIsModalVisible(false);
+      message.success('Thêm nhân viên thành công!');
+      form.resetFields();
+
+      // Reload the user list to reflect the newly added user
+      dispatch(fetchAllUsers()); // Refresh user list
+    } catch (error) {
+      console.error("Failed to add user:", error);
+      message.error('Failed to add user');
+    }
   };
 
   return (
@@ -136,24 +268,36 @@ const AdminManageAccount = () => {
             gap: '8px',
           }}>
             <Select
-              defaultValue={orderCategories[0].value}
-              style={{ width: 150 }}
-              options={orderCategories}
-              onChange={handleCategoryChange}
-            />
+  defaultValue={orderCategories[0].value}
+  style={{ width: 150 }}
+  onChange={handleCategoryChange}
+  data-testid="category-select"
+>
+  {orderCategories.map((category) => (
+    <Select.Option
+      key={category.value}
+      value={category.value}
+      data-testid={`category-option-${category.value}`}
+    >
+      {category.label}
+    </Select.Option>
+  ))}
+</Select>
+
             <Input.Search
               placeholder="Tìm kiếm..."
               allowClear
               onSearch={handleSearch}
               style={{ width: 200 }}
+               data-testid="search-input"
             />
-            <Button type="primary" style={{ width: "100px" }} onClick={handleSave}>Save</Button>
+            <Button type="primary" style={{ width: "100px" }} onClick={handleSave} data-testid = "luu">Lưu</Button>
             <Button 
               type="primary" 
-              style={{ width: "100px", backgroundColor: "green" }} 
+              style={{ width: "150px", backgroundColor: "green" }} 
               onClick={() => setIsModalVisible(true)}
             >
-              Add
+              Thêm nhân viên
             </Button>
           </div>
         </Col>
@@ -167,47 +311,31 @@ const AdminManageAccount = () => {
 
       {/* Add User Modal */}
       <Modal
-        title="Add New User"
+        title="Thêm nhân viên"
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
         <Form form={form} onFinish={handleAddUser}>
-          <Form.Item name="username" label="Tên tài khoản" rules={[{ required: true, message: 'Vui lòng nhập tên tài khoản' }]}>
+          <Form.Item name="username" label="Họ tên" >
             <Input />
           </Form.Item>
-          <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}>
-            <Input.Password />
-          </Form.Item>
-          <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Vui lòng nhập email' }]}>
+          <Form.Item name="email" label="Email" >
             <Input />
           </Form.Item>
           <Form.Item name="phoneNumber" label="Số điện thoại">
             <Input />
           </Form.Item>
-          <Form.Item name="address" label="Địa chỉ">
-            <Input />
-          </Form.Item>
-          <Form.Item name="gender" label="Giới tính">
-            <Select>
-              <Select.Option value="Male">Nam</Select.Option>
-              <Select.Option value="Female">Nữ</Select.Option>
-              <Select.Option value="Other">Khác</Select.Option>
-            </Select>
-          </Form.Item>
-          <Form.Item name="dateOfBirth" label="Ngày sinh">
-            <Input type="date" />
-          </Form.Item>
           <Form.Item name="role" label="Vai trò">
-            <Select defaultValue="Customer">
+            <Select defaultValue="Admin" data-testid="type-user-button">
               <Select.Option value="Admin">Quản trị viên</Select.Option>
-              <Select.Option value="Customer">Khách hàng</Select.Option>
-              <Select.Option value="Seller">Người bán</Select.Option>
+              <Select.Option value="Seller">Nhân viên bán hàng</Select.Option>
               <Select.Option value="WarehouseStaff">Nhân viên kho</Select.Option>
             </Select>
           </Form.Item>
+          {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
           <Form.Item>
-            <Button type="primary" htmlType="submit">Thêm</Button>
+            <Button type="primary" htmlType="submit"  data-testid="add-user-button">Thêm</Button>
           </Form.Item>
         </Form>
       </Modal>

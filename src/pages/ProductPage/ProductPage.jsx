@@ -93,10 +93,19 @@ useEffect(() => {
  
 
   console.log(products)
+  const activeProducts = products.filter(product => product.active);
 
- const productNew = filterProductsByAttributes(products, checkboxState[type] || [])
+ const productNew = filterProductsByAttributes(activeProducts, checkboxState[type] || [])
 
- 
+ const filteredAttributes = attributes
+  .filter(attr => attr.active) // Lọc các attribute có active: true
+  .map(attr => ({
+    ...attr,
+    values: attr.values.filter(value => value.active), // Lọc các value có active: true
+  }))
+  .filter(attr => attr.values.length > 0); // Loại bỏ các attribute không có value nào active
+
+
   return (
     <div>
     <CustomBreadcrumb items={breadcrumbItems} />
@@ -106,7 +115,7 @@ useEffect(() => {
       <PageContainer>
         {/* Sidebar */}
         <Sidebar>
-          <FilterSideBarComponent filters={attributes}  typeNe = {type}/>
+          <FilterSideBarComponent filters={filteredAttributes}  typeNe = {type}/>
         </Sidebar>
 
         {/* Main Content */}

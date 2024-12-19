@@ -50,7 +50,6 @@ export const fetchProductById = createAsyncThunk(
 export const updateProduct = createAsyncThunk(
   "products/updateProduct",
   async ({ id, data }, thunkAPI) => {
-    console.log(id)
     try {
       const response = await axios.put(`http://localhost:8081/api/products/${id}`, data);
       return response.data; // Trả về sản phẩm đã cập nhật
@@ -88,6 +87,21 @@ export const searchProductsByName = createAsyncThunk(
   }
 );
 
+// Async action để tạo một sản phẩm mới (chỉ nhận type)
+export const createProduct = createAsyncThunk(
+  "products/createProduct",
+  async (type, thunkAPI) => {
+    try {
+      const response = await axios.post("http://localhost:8081/api/products", {
+        type,
+      });
+      return response.data; // Trả về _id của sản phẩm mới tạo
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response?.data || err.message);
+    }
+  }
+);
+
 const productSlice = createSlice({
   name: "products",
   initialState: {
@@ -95,6 +109,7 @@ const productSlice = createSlice({
     product: null, // Sản phẩm chi tiết
     featuredProducts: [], // Danh sách sản phẩm nổi bật
     productname: [], // Kết quả tìm kiếm sản phẩm theo tên
+    newProductId: null, // ID của sản phẩm mới tạo
     status: "idle", // idle | loading | succeeded | failed
     error: null,
   },
@@ -147,7 +162,6 @@ const productSlice = createSlice({
       })
       .addCase(updateProduct.fulfilled, (state, action) => {
         state.status = "succeeded";
-        // Cập nhật thông tin sản phẩm trong danh sách hoặc thông tin chi tiết
         const updatedProduct = action.payload;
         state.products = state.products.map((product) =>
           product.id === updatedProduct.id ? updatedProduct : product
@@ -157,6 +171,19 @@ const productSlice = createSlice({
         }
       })
       .addCase(updateProduct.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload;
+      })
+      // Xử lý createProduct
+      .addCase(createProduct.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(createProduct.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.newProductId = action.payload.productId; // Lưu _id của sản phẩm mới
+      })
+      .addCase(createProduct.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       })

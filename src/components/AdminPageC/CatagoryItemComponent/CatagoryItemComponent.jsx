@@ -15,7 +15,7 @@ const generateObjectId = () => {
 const CatagoryItemComponent = ({ title }) => {
   const dispatch = useDispatch();
   const reduxAttributes = useSelector((state) => state.attributes.attributes);
-
+const [errorMessage, setErrorMessage] = useState('');
   const [attributes, setAttributes] = useState([]);
   const [selectedAttributeId, setSelectedAttributeId] = useState(null);
   const [isAttributeModalVisible, setIsAttributeModalVisible] = useState(false);
@@ -51,12 +51,29 @@ console.log("HELLO")
             _id: generateObjectId(),
             id: Math.random().toString(36).substring(7), // ID tạm
             name: values.attribute,
-            active: values.status === "Hoạt động",
+            active: true,
             type: title,
             values: [],
           };
+
+          const isNameExist = attributes.some(attribute => attribute.name === newAttribute.name);
+
+// Kiểm tra độ dài của values.attribute
+if (values.attribute.length < 3) {
+  setErrorMessage("Tên thuộc tính phải có ít nhất 3 ký tự.");
+  return; // Dừng lại và không thực hiện thêm thuộc tính
+} else if (values.attribute.length > 50) {
+  setErrorMessage("Tên thuộc tính không được vượt quá 50 ký tự.");
+  return; // Dừng lại và không thực hiện thêm thuộc tính
+} else if (isNameExist) {
+  setErrorMessage("Tên thuộc tính đã bị trùng.");
+  return; // Dừng lại và không thực hiện thêm thuộc tính
+}
           setAttributes([...attributes, newAttribute]);
         } else if (isValueModalVisible && selectedAttributeId) {
+          
+
+          
           // Thêm mới giá trị
           setAttributes(
             attributes.map((attr) =>
@@ -69,7 +86,7 @@ console.log("HELLO")
                         _id: generateObjectId(),
                         id: Math.random().toString(36).substring(7), // ID tạm
                         value: values.attribute,
-                        active: values.status === "Hoạt động",
+                        active: true,
                       },
                     ],
                   }
@@ -78,12 +95,26 @@ console.log("HELLO")
           );
         }
       } else {
+        
         if (isAttributeModalVisible) {
+          const isNameExist = attributes.some(attribute => attribute.name === values.attribute);
+
+// Kiểm tra độ dài của values.attribute
+if (values.attribute.length < 3) {
+  setErrorMessage("Tên thuộc tính phải có ít nhất 3 ký tự.");
+  return; // Dừng lại và không thực hiện thêm thuộc tính
+} else if (values.attribute.length > 50) {
+  setErrorMessage("Tên thuộc tính không được vượt quá 50 ký tự.");
+  return; // Dừng lại và không thực hiện thêm thuộc tính
+} else if (isNameExist) {
+  setErrorMessage("Tên thuộc tính đã bị trùng.");
+  return; // Dừng lại và không thực hiện thêm thuộc tính
+}
           // Chỉnh sửa thuộc tính
           setAttributes(
             attributes.map((attr) =>
               attr.id === editData.id
-                ? { ...attr, name: values.attribute, active: values.status === "Hoạt động" }
+                ? { ...attr, name: values.attribute }
                 : attr
             )
           );
@@ -155,10 +186,17 @@ console.log("HELLO")
                 attr.id === record.id ? { ...attr, active: value === "Hoạt động" } : attr
               )
             );
+            if(value === "Hoạt động"){
+              message.success(`Đưa ${record.name} hoạt động!`);
+            }
+            else{
+              message.success(`Vô hiệu hóa ${record.name}!`);
+            }
           }}
+          data-testid={`select-${record.name}`} // Thêm data-testid vào Select
         >
-          <Option value="Hoạt động">Hoạt động</Option>
-          <Option value="Không hoạt động">Không hoạt động</Option>
+          <Option value="Hoạt động" data-testid={`option-active-${record.name}`}>Hoạt động</Option>
+          <Option value="Không hoạt động" data-testid={`option-inactive-${record.name}`}>Không hoạt động</Option>
         </Select>
       ),
     },
@@ -170,11 +208,12 @@ console.log("HELLO")
           type="primary"
           icon={<EditOutlined />}
           onClick={() => showEditModal(record, false)}
+          data-testid={`${record.name}`} 
         />
       ),
     },
   ];
-
+  
   const valueColumns = [
     { title: "ID", dataIndex: "id", key: "id" },
     { title: "Giá trị", dataIndex: "value", key: "value" },
@@ -201,10 +240,18 @@ console.log("HELLO")
                   : attr
               )
             );
+            if(value === "Hoạt động"){
+              message.success(`Đưa ${record.value} hoạt động!`);
+            }
+            else{
+              message.success(`Vô hiệu hóa ${record.value}!`);
+            }
+        
           }}
+          data-testid={`select-${record.value}`} // Thêm data-testid vào Select
         >
-          <Option value="Hoạt động">Hoạt động</Option>
-          <Option value="Không hoạt động">Không hoạt động</Option>
+          <Option value="Hoạt động" data-testid={`option-active-${record.value}`}>Hoạt động</Option>
+          <Option value="Không hoạt động" data-testid={`option-inactive-${record.value}`}>Không hoạt động</Option>
         </Select>
       ),
     },
@@ -216,10 +263,12 @@ console.log("HELLO")
           type="primary"
           icon={<EditOutlined />}
           onClick={() => showEditModal(record, true)}
+          data-testid={`${record.value}`} 
         />
       ),
     },
   ];
+  
 
   const [isSaved, setIsSaved] = useState(false);
 
@@ -235,7 +284,7 @@ const handleSave2 = async () => {
     .catch((error) => {
         console.error("Update failed:", error);
     });
-    message.success("Changes saved!");
+    message.success("Lưu thành công.");
 };
 
 // Use an effect to trigger re-render when isSaved changes
@@ -248,7 +297,7 @@ useEffect(() => {
   return (
     <div>
     <Button  type="primary" style={{ width: "100px" }} onClick={() => handleSave2()}>
-            Save
+            Lưu  
           </Button>
       <Row gutter={16}>
       
@@ -305,21 +354,26 @@ useEffect(() => {
         title={isAdding ? "Thêm thuộc tính" : "Chỉnh sửa thuộc tính"}
         onCancel={() => setIsAttributeModalVisible(false)}
         onOk={handleSave}
+        okButtonProps={{ "data-testid": "modal-ok-button" }}
       >
         <Form form={form} layout="vertical">
           <Form.Item
             name="attribute"
             label="Thuộc tính"
             rules={[{ required: true, message: "Vui lòng nhập thuộc tính!" }]}
+            data-testid="attribute"
           >
             <Input />
           </Form.Item>
-          <Form.Item name="status" label="Tình trạng">
+          {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
+          {/* {( !isAdding &&
+             <Form.Item name="status" label="Tình trạng">
             <Select>
               <Option value="Hoạt động">Hoạt động</Option>
               <Option value="Không hoạt động">Không hoạt động</Option>
             </Select>
-          </Form.Item>
+          </Form.Item> )} */}
+          
         </Form>
       </Modal>
       <Modal
@@ -327,21 +381,23 @@ useEffect(() => {
         title={isAdding ? "Thêm giá trị" : "Chỉnh sửa giá trị"}
         onCancel={() => setIsValueModalVisible(false)}
         onOk={handleSave}
+        okButtonProps={{ "data-testid": "modal-ok-button" }}
       >
         <Form form={form} layout="vertical">
           <Form.Item
             name="attribute"
             label="Giá trị"
             rules={[{ required: true, message: "Vui lòng nhập giá trị!" }]}
+             data-testid="attribute"
           >
             <Input />
           </Form.Item>
-          <Form.Item name="status" label="Tình trạng">
+          {/* <Form.Item name="status" label="Tình trạng">
             <Select>
               <Option value="Hoạt động">Hoạt động</Option>
               <Option value="Không hoạt động">Không hoạt động</Option>
             </Select>
-          </Form.Item>
+          </Form.Item> */}
         </Form>
       </Modal>
     </div>

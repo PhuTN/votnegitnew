@@ -212,7 +212,7 @@ const AdminDashboardComponent = () => {
         </Col>
       </Row>
 
-      <Row gutter={[10, 10]} style={{ margin: '25px 10px' }}>
+      {/* <Row gutter={[10, 10]} style={{ margin: '25px 10px' }}>
         <Col span={24}>
           <AdminTableComponent
             title={"Sản phẩm bán chạy"}
@@ -223,7 +223,7 @@ const AdminDashboardComponent = () => {
             data={dataProduct}
           />
         </Col>
-      </Row>
+      </Row> */}
     </div>
   );
 };

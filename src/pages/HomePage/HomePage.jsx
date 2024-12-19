@@ -177,7 +177,8 @@ const HomePage = () => {
  
    var product = transformProducts(products)
   
-
+   localStorage.getItem("cart")
+   console.log("CARTT",localStorage.getItem("cart") )
 
 
   
