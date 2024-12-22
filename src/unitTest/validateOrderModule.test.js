@@ -1,5 +1,5 @@
 import { validateOrder } from '../modules/validateOrderModule';
-
+// npx jest --testPathPattern=src/unitTest/validateOrderModule.test.js
 describe("Hàm validateOrder", () => {
     it("UTCID01: Dữ liệu hợp lệ", () => {
         const order = {

@@ -1,5 +1,5 @@
 import { calculateTotalProductPriceModule } from '../modules/calculateTotalProductPriceModule';
-
+// npx jest --testPathPattern=src/unitTest/calculateTotalProductPriceModule.test.js
 describe("Hàm calculateTotalProductPriceModule", () => {
     it("UTCID01: Dữ liệu hợp lệ", () => {
         const products = [

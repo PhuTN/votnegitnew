@@ -1,5 +1,5 @@
 import { validateAddStaffModule } from '../modules/validateAddStaffModule';
-
+// npx jest --testPathPattern=src/unitTest/validateAddStaffModule.test.js
 describe("Hàm validateAddStaffModule", () => {
     it("UTCID01: Dữ liệu hợp lệ (Admin)", () => {
         const result = validateAddStaffModule("Nguyễn Thế Võ Quyền Anh", "0367171742", "quyenanh234@gmail.com", "Admin");

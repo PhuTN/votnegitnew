@@ -1,5 +1,5 @@
 import { validateUserInfoModule } from '../modules/validateUserInfoModule';
-
+//  npx jest --testPathPattern=src/unitTest/validateUserInfoModule.test.js
 describe("Hàm validateUserInfoModule", () => {
     it("UTCID01: Dữ liệu hợp lệ", () => {
         const result = validateUserInfoModule(
