@@ -142,7 +142,7 @@ const LoginPageComponent = () => {
           // Xử lý giỏ hàng
           navigate(localStorage.getItem("previousURL") || "/");
           
-          setTimeout(() => window.location.reload(), 300);
+          setTimeout(() => window.location.reload(), 1000);
           message.success("Đăng nhập thành công!");
 
           axios

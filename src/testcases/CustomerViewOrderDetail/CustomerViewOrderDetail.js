@@ -8,7 +8,7 @@ const editButton = Selector('button').withText('SỬA THÔNG TIN CÁ NHÂN');
 
 
 
-test('[UpdateUserInfomation-] Xem chi tiết đơn hàng có id O63308', async t => {
+test('[CustomerViewOrderDetail-] Xem chi tiết đơn hàng có id O63308', async t => {
 
     await t
         .useRole(customer2)
@@ -18,7 +18,7 @@ test('[UpdateUserInfomation-] Xem chi tiết đơn hàng có id O63308', async t
      
 })
 
-test('[UpdateUserInfomation-] Xác minh người dùng có cập nhật thông tin thành công với thông tin chính xác không ', async t => {
+test('[CustomerViewOrderDetail-1] Xem chi tiết đơn hàng có id O59011 ', async t => {
 
     await t
         .useRole(customer2)

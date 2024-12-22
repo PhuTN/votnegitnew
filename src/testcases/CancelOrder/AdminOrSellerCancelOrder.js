@@ -1,7 +1,11 @@
 import { Selector } from 'testcafe';
 import{admin} from '../utilities/createRole'
-fixture('Test chức năng nhân viên bán hàng hoặc Admin cập nhật trạng thái đơn hàng')
-test('[UpdateOrderStatus-] Cập nhật trạng thái đang giao cho dơn hàng có id O55616', async t => {
+
+
+
+fixture('Test chức năng nhân viên bán hàng hoặc Admin hủy đơn hàng')
+
+test('[CancelOrder-] Test hủy dơn hàng có id O55616', async t => {
     const menuItem = Selector('.ant-menu-item').withText('Đơn hàng');
     await t
         .useRole(admin)

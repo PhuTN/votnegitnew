@@ -4,6 +4,7 @@ import { Input, Button, Typography, message } from 'antd';
 import { useDispatch } from 'react-redux';
 import { createUser, verifyUser, resendVerificationCode } from '../../../redux/Slicer/userSlice'; // Import các hàm từ slice của bạn
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { validateSignupModule } from '../../../modules/validateSignupModule';
 
 const { Link } = Typography;
 
@@ -161,6 +162,9 @@ const SigninPageComponent = () => {
     // Reset trạng thái lỗi trước khi xử lý
     setErrorMessage('');
 
+
+ 
+
     const usernameError = validateUsername(userName);
   if (usernameError) {
     setErrorMessage(usernameError)
@@ -193,8 +197,18 @@ const SigninPageComponent = () => {
       return;
     }
   
+
+
+    if(!validateSignupModule(userName,phone,email,password,password2)){
+      
+      return;
+    }
+
     setLoading(true);
   
+
+
+
     const newUser = { 
       id: generateUserId(), 
       

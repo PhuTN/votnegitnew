@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { createOrder } from '../../../redux/Slicer/orderSlice';
 import {jwtDecode} from 'jwt-decode';
 import { fetchUserById } from '../../../redux/Slicer/userSlice';
+import { validateOrder } from '../../../modules/validateOrderModule';
 
 const { TextArea } = Input;
 
@@ -116,9 +117,13 @@ const PaymentComponent = ({ products }) => {
     paymentMethod: paymentMethod, // Lấy giá trị từ Radio button
     paymentStatus: "Chưa Thanh Toán",
   };
+  console.log(orderNote)
 const navigate = useNavigate();
   const handleSubmit = async (e) => {
     
+    if(!validateOrder(user?.username,user?.phoneNumber,user?.email,user?.address,  paymentMethod,products.length,orderNote )){
+      return;
+    }
     e.preventDefault();
     try {
       const result = await dispatch(createOrder(orderData)).unwrap();

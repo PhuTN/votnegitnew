@@ -1,9 +1,9 @@
 import { Selector } from 'testcafe';
 import{admin} from '../utilities/createRole'
-fixture('Test chức năng Admin thêm nhân viên vào hệ thống')
+fixture('Test chức năng Admin xem danh sách khách hàng')
 
 
-test('[AddStaff-] Tạo nhân viên bán hàng với thông tin chính xác ', async t => {
+test('[ViewCustomerList-] Xem danh sách khách hàng ', async t => {
     const menuItem = Selector('.ant-menu-item').withText('Tài khoản người dùng');
     await t
         .useRole(admin)

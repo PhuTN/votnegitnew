@@ -8,25 +8,33 @@ test('[ManageProduct-5] Kiểm tra chức năng đổi tên sản phẩm ', asyn
 
     await t
         .useRole(warehouseStaff)
-        //B1
+        
         .navigateTo('http://localhost:3000/admin') ;
 
 
-        
-    const categoryMenu = Selector('[data-testid="menu-products2"]'); // Chọn menu "Sản phẩm" dựa trên testid
+    
+    //B1
+    const categoryMenu = Selector('[data-testid="menu-products2"]'); 
     await t.click(categoryMenu);
 
-    // Chọn "Vợt" từ các mục con
-    const categoryItem = Selector('[data-testid="menu-votp2"]'); // Chọn "Vợt" dựa trên testid
+   //B2
+    const categoryItem = Selector('[data-testid="menu-votp2"]');
     await t.click(categoryItem);
 
-    const product = Selector('[data-testid="kxzihpdqb"]'); // Chọn "Vợt" dựa trên testid
+
+  //B3
+   const product = Selector('[data-testid="kxzihpdqb"]');
     await t.click(product);
    
+   
+    //B4
     await t
     .typeText(Selector('[data-testid="tensanpham"]'), 'Vợt test nè',{ replace: true })
     
-    const saveBtn = Selector('[data-testid="nutluu"]'); // Chọn "Vợt" dựa trên testid
+
+    //B5
+
+const saveBtn = Selector('[data-testid="nutluu"]');
     await t.click(saveBtn)
     .expect(Selector('.ant-message').withText("Lưu thành công!").exists).ok();
 
@@ -39,28 +47,40 @@ test('[ManageProduct-6] Kiểm tra chức năng thêm ưu đãi ', async t => {
 
     await t
         .useRole(warehouseStaff)
-        //B1
+        
         .navigateTo('http://localhost:3000/admin') ;
 
 
         
-    const categoryMenu = Selector('[data-testid="menu-products2"]'); // Chọn menu "Sản phẩm" dựa trên testid
+    //B1
+    const categoryMenu = Selector('[data-testid="menu-products2"]'); 
     await t.click(categoryMenu);
 
-    // Chọn "Vợt" từ các mục con
-    const categoryItem = Selector('[data-testid="menu-votp2"]'); // Chọn "Vợt" dựa trên testid
+   
+   //B2
+    const categoryItem = Selector('[data-testid="menu-votp2"]');
     await t.click(categoryItem);
 
-    const product = Selector('[data-testid="kxzihpdqb"]'); // Chọn "Vợt" dựa trên testid
+  //B3
+   const product = Selector('[data-testid="kxzihpdqb"]');
     await t.click(product);
    
-    const addEndowBtn = Selector('[data-testid="themuudai"]'); // Chọn "Vợt" dựa trên testid
+    //B4
+   
+    const addEndowBtn = Selector('[data-testid="themuudai"]');
     await t.click(addEndowBtn)
+
+    //B5
     .typeText(Selector('[data-testid="inputuudai"]'), 'Một tặng một',{ replace: true })
-const okEndow = Selector('[data-testid="okuudai"]'); // Chọn "Vợt" dựa trên testid
+
+    //B6
+const okEndow = Selector('[data-testid="okuudai"]');
     await t.click(okEndow)
     .expect(Selector('.ant-message').withText("Thêm ưu đãi thành công!").exists).ok();
-const saveBtn = Selector('[data-testid="nutluu"]'); // Chọn "Vợt" dựa trên testid
+
+    
+//B7
+const saveBtn = Selector('[data-testid="nutluu"]');
     await t.click(saveBtn)
     .expect(Selector('.ant-message').withText("Lưu thành công!").exists).ok();
 
@@ -75,28 +95,37 @@ test('[ManageProduct-7] Kiểm tra chức năng chỉnh sửa ưu đãi ', async
 
     await t
         .useRole(warehouseStaff)
-        //B1
+        
         .navigateTo('http://localhost:3000/admin') ;
 
 
         
-    const categoryMenu = Selector('[data-testid="menu-products2"]'); // Chọn menu "Sản phẩm" dựa trên testid
+    //B1
+    const categoryMenu = Selector('[data-testid="menu-products2"]'); 
     await t.click(categoryMenu);
 
-    // Chọn "Vợt" từ các mục con
-    const categoryItem = Selector('[data-testid="menu-votp2"]'); // Chọn "Vợt" dựa trên testid
+   
+   //B2
+    const categoryItem = Selector('[data-testid="menu-votp2"]');
     await t.click(categoryItem);
 
-    const product = Selector('[data-testid="kxzihpdqb"]'); // Chọn "Vợt" dựa trên testid
+  //B3
+   const product = Selector('[data-testid="kxzihpdqb"]');
     await t.click(product);
    
-    const editEndowBtn = Selector('[data-testid="ongbf0sse"]'); // Chọn "Vợt" dựa trên testid
+    //B4
+   
+    const editEndowBtn = Selector('[data-testid="ongbf0sse"]');
      await t.click(editEndowBtn)
+
+     //B5
      .typeText(Selector('[data-testid="inputuudai"]'), 'Ưu đãi sửa',{ replace: true })
-     const okEndow = Selector('[data-testid="okuudai"]'); // Chọn "Vợt" dựa trên testid
+     //B6
+     const okEndow = Selector('[data-testid="okuudai"]');
         await t.click(okEndow)
         .expect(Selector('.ant-message').withText("Chỉnh sửa ưu đãi thành công!").exists).ok();
-     const saveBtn = Selector('[data-testid="nutluu"]'); // Chọn "Vợt" dựa trên testid
+     //B7
+const saveBtn = Selector('[data-testid="nutluu"]');
         await t.click(saveBtn)
         .expect(Selector('.ant-message').withText("Lưu thành công!").exists).ok();
 });
@@ -109,25 +138,30 @@ test('[ManageProduct-7] Kiểm tra chức năng chỉnh sửa ưu đãi ', async
 
     await t
         .useRole(warehouseStaff)
-        //B1
+        
         .navigateTo('http://localhost:3000/admin') ;
 
 
         
-    const categoryMenu = Selector('[data-testid="menu-products2"]'); // Chọn menu "Sản phẩm" dựa trên testid
+    //B1
+    const categoryMenu = Selector('[data-testid="menu-products2"]'); 
     await t.click(categoryMenu);
 
-    // Chọn "Vợt" từ các mục con
-    const categoryItem = Selector('[data-testid="menu-votp2"]'); // Chọn "Vợt" dựa trên testid
+   
+   //B2
+    const categoryItem = Selector('[data-testid="menu-votp2"]');
     await t.click(categoryItem);
 
-    const product = Selector('[data-testid="kxzihpdqb"]'); // Chọn "Vợt" dựa trên testid
+  //B3
+   const product = Selector('[data-testid="kxzihpdqb"]');
     await t.click(product);
    
-    const editEndowBtn = Selector('[data-testid="ongbf0sse"]'); // Chọn "Vợt" dựa trên testid
+    //B4
+   
+    const editEndowBtn = Selector('[data-testid="ongbf0sse"]');
      await t.click(editEndowBtn)
 
-
+ //B5
      const selectElement = Selector('[data-testid="selectuudai"]');
 const optionActive = Selector('[data-testid="activeuudai"]');
 const optionInactive = Selector('[data-testid="unactivetuudai"]');
@@ -138,10 +172,12 @@ const optionInactive = Selector('[data-testid="unactivetuudai"]');
     await t
         .click(selectElement)
         .click(optionInactive)
-         const okEndow = Selector('[data-testid="okuudai"]'); // Chọn "Vợt" dựa trên testid
+        //B6
+         const okEndow = Selector('[data-testid="okuudai"]');
         await t.click(okEndow)
         .expect(Selector('.ant-message').withText("Chỉnh sửa ưu đãi thành công!").exists).ok();
-     const saveBtn = Selector('[data-testid="nutluu"]'); // Chọn "Vợt" dựa trên testid
+     //B7
+const saveBtn = Selector('[data-testid="nutluu"]');
         await t.click(saveBtn)
         .expect(Selector('.ant-message').withText("Lưu thành công!").exists).ok();
         
@@ -154,22 +190,27 @@ test('[ManageProduct-9] Kiểm tra chức năng thêm màu sắc mới ', async 
 
     await t
         .useRole(warehouseStaff)
-        //B1
+        
         .navigateTo('http://localhost:3000/admin') ;
 
 
         
-    const categoryMenu = Selector('[data-testid="menu-products2"]'); // Chọn menu "Sản phẩm" dựa trên testid
+    //B1
+    const categoryMenu = Selector('[data-testid="menu-products2"]'); 
     await t.click(categoryMenu);
 
-    // Chọn "Vợt" từ các mục con
-    const categoryItem = Selector('[data-testid="menu-votp2"]'); // Chọn "Vợt" dựa trên testid
+   
+   //B2
+    const categoryItem = Selector('[data-testid="menu-votp2"]');
     await t.click(categoryItem);
 
-    const product = Selector('[data-testid="kxzihpdqb"]'); // Chọn "Vợt" dựa trên testid
+  //B3
+   const product = Selector('[data-testid="kxzihpdqb"]');
     await t.click(product);
    
-    const addEndowBtn = Selector('[data-testid="themmaubtn"]'); // Chọn "Vợt" dựa trên testid
+    //B4
+   
+    const addEndowBtn = Selector('[data-testid="themmaubtn"]');
     await t.click(addEndowBtn)
 
 
@@ -180,7 +221,7 @@ test('[ManageProduct-9] Kiểm tra chức năng thêm màu sắc mới ', async 
     await t
     
      
-
+//B5
     // Đường dẫn tới file ảnh test
     const filePath = 'C:/Users/PHU/Downloads/checkin.jpg'; // Đảm bảo file này có trong thư mục test
 
@@ -194,11 +235,12 @@ test('[ManageProduct-9] Kiểm tra chức năng thêm màu sắc mới ', async 
     
 
     
-
-         const okEndow = Selector('[data-testid="okmau"]'); // Chọn "Vợt" dựa trên testid
+ //B6
+         const okEndow = Selector('[data-testid="okmau"]');
         await t.click(okEndow)
         .expect(Selector('.ant-message').withText("Thêm màu mới thành công!").exists).ok();
-     const saveBtn = Selector('[data-testid="nutluu"]'); // Chọn "Vợt" dựa trên testid
+     //B7
+const saveBtn = Selector('[data-testid="nutluu"]');
         await t.click(saveBtn)
         .expect(Selector('.ant-message').withText("Lưu thành công!").exists).ok();
 
@@ -211,22 +253,27 @@ test('[ManageProduct-10] Kiểm tra chức năng sửa màu sắc ', async t => 
 
     await t
         .useRole(warehouseStaff)
-        //B1
+        
         .navigateTo('http://localhost:3000/admin') ;
 
 
         
-    const categoryMenu = Selector('[data-testid="menu-products2"]'); // Chọn menu "Sản phẩm" dựa trên testid
+    //B1
+    const categoryMenu = Selector('[data-testid="menu-products2"]'); 
     await t.click(categoryMenu);
 
-    // Chọn "Vợt" từ các mục con
-    const categoryItem = Selector('[data-testid="menu-votp2"]'); // Chọn "Vợt" dựa trên testid
+   
+   //B2
+    const categoryItem = Selector('[data-testid="menu-votp2"]');
     await t.click(categoryItem);
 
-    const product = Selector('[data-testid="kxzihpdqb"]'); // Chọn "Vợt" dựa trên testid
+  //B3
+   const product = Selector('[data-testid="kxzihpdqb"]');
     await t.click(product);
    
-    const addEndowBtn = Selector('[data-testid="835xubuls"]'); // Chọn "Vợt" dựa trên testid
+    //B4
+   
+    const addEndowBtn = Selector('[data-testid="835xubuls"]');
     await t.click(addEndowBtn)
 
 
@@ -236,7 +283,7 @@ test('[ManageProduct-10] Kiểm tra chức năng sửa màu sắc ', async t => 
     // Mở modal
     await t
     
-     
+     //B5
 
     // Đường dẫn tới file ảnh test
     const filePath = 'C:/Users/PHU/Downloads/checkin.jpg'; // Đảm bảo file này có trong thư mục test
@@ -250,12 +297,13 @@ test('[ManageProduct-10] Kiểm tra chức năng sửa màu sắc ', async t => 
         
     
 
-    
+    //B6
 
-         const okEndow = Selector('[data-testid="okmau"]'); // Chọn "Vợt" dựa trên testid
+         const okEndow = Selector('[data-testid="okmau"]');
         await t.click(okEndow)
         .expect(Selector('.ant-message').withText('Sửa màu sắc thành công!').exists).ok();
-     const saveBtn = Selector('[data-testid="nutluu"]'); // Chọn "Vợt" dựa trên testid
+     //B7
+const saveBtn = Selector('[data-testid="nutluu"]');
         await t.click(saveBtn)
         .expect(Selector('.ant-message').withText("Lưu thành công!").exists).ok();
 
@@ -267,90 +315,119 @@ test('[ManageProduct-11] Kiểm tra chức năng điều chỉnh tồn kho/size 
 
     await t
         .useRole(warehouseStaff)
-        //B1
+        
         .navigateTo('http://localhost:3000/admin') ;
 
 
         
-    const categoryMenu = Selector('[data-testid="menu-products2"]'); // Chọn menu "Sản phẩm" dựa trên testid
+    //B1
+    const categoryMenu = Selector('[data-testid="menu-products2"]'); 
     await t.click(categoryMenu);
 
-    // Chọn "Vợt" từ các mục con
-    const categoryItem = Selector('[data-testid="menu-votp2"]'); // Chọn "Vợt" dựa trên testid
+   
+   //B2
+    const categoryItem = Selector('[data-testid="menu-votp2"]');
     await t.click(categoryItem);
 
-    const product = Selector('[data-testid="kxzihpdqb"]'); // Chọn "Vợt" dựa trên testid
+  //B3
+   const product = Selector('[data-testid="kxzihpdqb"]');
     await t.click(product);
+   
+    //B4
    
 
     const colorRow = Selector('table').find('tr').withText('835xubuls');
 
 await t
     .click(colorRow, { offsetX: 10, offsetY: 10 }) 
+
+    //B5
     .click(Selector('[data-testid="2U: 90 - 94 g"]'))
+
+    //B6
     .typeText(Selector('[data-testid="numkho"]'), '5', { replace: true })
     .click(Selector('[data-testid="okkho"]'))
     .expect(Selector('.ant-message').withText("Sửa tồn kho thành công!").exists).ok();
-         const saveBtn = Selector('[data-testid="nutluu"]'); // Chọn "Vợt" dựa trên testid
+         //B7
+const saveBtn = Selector('[data-testid="nutluu"]');
         await t.click(saveBtn)
         .expect(Selector('.ant-message').withText("Lưu thành công!").exists).ok();
     
 });
 
-test('[ManageProduct-12] Kiểm tra chức năng chỉnh sửa giá trị thuộc tính sản phẩm ', async t => {
+
+
+test('[ManageProduct-12] Kiểm tra chức năng sửa mô tả sản phẩm ', async t => {
   
 
     await t
         .useRole(warehouseStaff)
-        //B1
+        
         .navigateTo('http://localhost:3000/admin') ;
 
 
         
-    const categoryMenu = Selector('[data-testid="menu-products2"]'); // Chọn menu "Sản phẩm" dựa trên testid
+    //B1
+    const categoryMenu = Selector('[data-testid="menu-products2"]'); 
     await t.click(categoryMenu);
 
-    // Chọn "Vợt" từ các mục con
-    const categoryItem = Selector('[data-testid="menu-votp2"]'); // Chọn "Vợt" dựa trên testid
-    await t.click(categoryItem);
-
-    const product = Selector('[data-testid="kxzihpdqb"]'); // Chọn "Vợt" dựa trên testid
-    await t.click(product);
    
-    await t
-    .click(Selector('[data-testid="AV006"]'))
-    .click(Selector('[data-testid="4U: 80 - 84 g"]'))
-    .click(Selector('[data-testid="5U: 75 - 79 g"]'))
-    .click(Selector('[data-testid="ok"]'))
-             const saveBtn = Selector('[data-testid="nutluu"]'); // Chọn "Vợt" dựa trên testid
-        await t.click(saveBtn)
-        .expect(Selector('.ant-message').withText("Lưu thành công!").exists).ok();
-    
-});
-
-test('[ManageProduct-13] Kiểm tra chức năng sửa mô tả sản phẩm ', async t => {
-  
-
-    await t
-        .useRole(warehouseStaff)
-        //B1
-        .navigateTo('http://localhost:3000/admin') ;
-
-
-        
-    const categoryMenu = Selector('[data-testid="menu-products2"]'); // Chọn menu "Sản phẩm" dựa trên testid
-    await t.click(categoryMenu);
-
-    // Chọn "Vợt" từ các mục con
-    const categoryItem = Selector('[data-testid="menu-votp2"]'); // Chọn "Vợt" dựa trên testid
+   //B2
+    const categoryItem = Selector('[data-testid="menu-votp2"]');
     await t.click(categoryItem);
 
-    const product = Selector('[data-testid="kxzihpdqb"]'); // Chọn "Vợt" dựa trên testid
+  //B3
+   const product = Selector('[data-testid="kxzihpdqb"]');
     await t.click(product)
     .typeText(Selector('[data-testid="des"]'), 'Vợt tốt nhất thế giới', { replace: true })
    
     
-             const saveBtn = Selector('[data-testid="nutluu"]'); // Chọn "Vợt" dựa trên testid
+             //B5
+const saveBtn = Selector('[data-testid="nutluu"]');
+        await t.click(saveBtn)
+        .expect(Selector('.ant-message').withText("Lưu thành công!").exists).ok();
+    
+});
+
+
+
+test('[ManageProduct-13] Kiểm tra chức năng chỉnh sửa giá trị thuộc tính sản phẩm ', async t => {
+  
+
+    await t
+        .useRole(warehouseStaff)
+        
+        .navigateTo('http://localhost:3000/admin') ;
+
+
+        
+    //B1
+    const categoryMenu = Selector('[data-testid="menu-products2"]'); 
+    await t.click(categoryMenu);
+
+   
+   //B2
+    const categoryItem = Selector('[data-testid="menu-votp2"]');
+    await t.click(categoryItem);
+
+  //B3
+   const product = Selector('[data-testid="kxzihpdqb"]');
+    await t.click(product);
+   
+    //B4
+   
+    await t
+    .click(Selector('[data-testid="AV006"]'))
+
+    //B5
+    .click(Selector('[data-testid="4U: 80 - 84 g"]'))
+    .click(Selector('[data-testid="5U: 75 - 79 g"]'))
+
+    //B6
+    .click(Selector('[data-testid="ok"]'))
+
+    //B7
+const saveBtn = Selector('[data-testid="nutluu"]');
         await t.click(saveBtn)
         .expect(Selector('.ant-message').withText("Lưu thành công!").exists).ok();
     

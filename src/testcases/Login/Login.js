@@ -14,46 +14,46 @@ const errorMessage = Selector('p').withText('Email người dùng hoặc mật k
 fixture('Test chức năng Người dùng đăng nhập hệ thống')
     .page(URL);
 
-// test('[Login-] Không nhập email', async t => {
+test('[Login-] Không nhập email', async t => {
     
-//     await t
-//         .expect(Selector('h2').withText('ĐĂNG NHẬP').exists).ok('Không tìm thấy tiêu đề "ĐĂNG NHẬP"')
-//         .expect(emailInput.exists).ok('Không tìm thấy trường nhập email')
-//         .expect(passwordInput.exists).ok('Không tìm thấy trường nhập mật khẩu')
-//         .expect(loginButton.exists).ok('Không tìm thấy nút ĐĂNG NHẬP');
+    await t
+        .expect(Selector('h2').withText('ĐĂNG NHẬP').exists).ok('Không tìm thấy tiêu đề "ĐĂNG NHẬP"')
+        .expect(emailInput.exists).ok('Không tìm thấy trường nhập email')
+        .expect(passwordInput.exists).ok('Không tìm thấy trường nhập mật khẩu')
+        .expect(loginButton.exists).ok('Không tìm thấy nút ĐĂNG NHẬP');
 
-//     // B2
-//     await t
+    // B2
+    await t
         
-//         .typeText(passwordInput, 'Password123!')
-//         .click(loginButton);
+        .typeText(passwordInput, 'Password123!')
+        .click(loginButton);
 
-//         // B3
-//         await t 
-//         .expect(Selector('.ant-message').withText("Vui lòng nhập email!").exists).ok()
+        // B3
+        await t 
+        .expect(Selector('.ant-message').withText("Vui lòng nhập email!").exists).ok()
    
-// });
+});
 
 
-// test('[Login-11] Không nhập mật khẩu', async t => {
+test('[Login-1] Không nhập mật khẩu', async t => {
     
-//     await t
-//         .expect(Selector('h2').withText('ĐĂNG NHẬP').exists).ok('Không tìm thấy tiêu đề "ĐĂNG NHẬP"')
-//         .expect(emailInput.exists).ok('Không tìm thấy trường nhập email')
-//         .expect(passwordInput.exists).ok('Không tìm thấy trường nhập mật khẩu')
-//         .expect(loginButton.exists).ok('Không tìm thấy nút ĐĂNG NHẬP');
+    await t
+        .expect(Selector('h2').withText('ĐĂNG NHẬP').exists).ok('Không tìm thấy tiêu đề "ĐĂNG NHẬP"')
+        .expect(emailInput.exists).ok('Không tìm thấy trường nhập email')
+        .expect(passwordInput.exists).ok('Không tìm thấy trường nhập mật khẩu')
+        .expect(loginButton.exists).ok('Không tìm thấy nút ĐĂNG NHẬP');
 
-//     // B2
-//     await t
-//         .typeText(emailInput, '225@gm.uit.edu.vn')
-//         .click(loginButton);
+    // B2
+    await t
+        .typeText(emailInput, '225@gm.uit.edu.vn')
+        .click(loginButton);
 
-//         // B3
-//         await t
-//         .wait(500)
-//         .expect(Selector('.ant-message').withText("Vui lòng nhập mật khẩu!").exists).ok()
+        // B3
+        await t
+        .wait(500)
+        .expect(Selector('.ant-message').withText("Vui lòng nhập mật khẩu!").exists).ok()
    
-// });
+});
 
 test('[Login-2] Kiểm tra đăng nhập với tài khoản không tồn tại hoặc bị khóa', async t => {
     
@@ -97,7 +97,7 @@ test('[Login-3] Kiểm tra đăng nhập với tài khoản admin và trả về
 
         // B3
         await t
-       
+     
         .expect(Selector('.ant-message').withText("Đăng nhập thành công!").exists).ok()
    
 
@@ -127,7 +127,7 @@ test('[Login-4] Kiểm tra đăng nhập với tài khoản nhân viên bán hà
 
         // B3
         await t
-       
+      
         .expect(Selector('.ant-message').withText("Đăng nhập thành công!").exists).ok()
    
 
@@ -157,7 +157,8 @@ test('[Login-5] Kiểm tra đăng nhập với tài khoản nhân viên kho và 
 
         // B3
         await t
-       
+    
+     
         .expect(Selector('.ant-message').withText("Đăng nhập thành công!").exists).ok()
    
 

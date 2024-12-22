@@ -3,6 +3,8 @@ import { Modal, Table, Button, Select, Input, Row, Col, Form, message } from 'an
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchAllUsers, updateAllUsers, addStaff } from '../../../redux/Slicer/userSlice'; // Import addStaff action
 import AdminTableComponent from '../AdminTableComponent/AdminTableComponent';
+import { validateProductInfoModule } from '../../../modules/validateProductInfoModule';
+import { validateAddStaffModule } from '../../../modules/validateAddStaffModule';
 
 const AdminManageAccount = () => {
   const dispatch = useDispatch();
@@ -221,6 +223,11 @@ const AdminManageAccount = () => {
     
     if (!validateEmail(values.email)) {
       setErrorMessage('Email không hợp lệ!');
+      console.log('Email không hợp lệ!')
+      return;
+    }
+
+    if(!validateAddStaffModule(values.username,values.phoneNumber,values.email,values.role || "Admin")){
       return;
     }
     try {
@@ -232,15 +239,16 @@ const AdminManageAccount = () => {
         role: values.role || "Admin",
         phoneNumber: values.phoneNumber || '',  // Nếu không có số điện thoại thì để trống
       };
-      console.log(newUser)
+     
       // Dispatch addStaff to add a new user
       const result = await dispatch(addStaff(newUser)).unwrap()
+      
       if(result === "er"){
         setErrorMessage('Email đã được tài khoản khác đăng ký');
         form.resetFields();
-
+        console.log("RE", result)
       // Reload the user list to reflect the newly added user
-      dispatch(fetchAllUsers()); // Refresh user list
+      //dispatch(fetchAllUsers()); // Refresh user list
         return ;
       }
 

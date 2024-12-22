@@ -5,29 +5,30 @@ import{customer2} from "../utilities/createRole"
 
 
 
-fixture('Test chức năng điều chỉnh giỏ hàng ')
+fixture('Test chức năng khách hàng đặt hàng')
 
-// test('[ViewProduct-] Test chức năng xóa sản phẩm khỏi giỏ hàng', async t => {
-//     await t.useRole(customer2)
-//     .navigateTo('http://localhost:3000')
-//     await t.wait(3000)
-//     await t.click(Selector('[data-testid="cartPageBtn"]'))
-//     await t.click(Selector('[data-testid="dathang"]'))
-//     await t.typeText(Selector('[data-testid="ghichu"]'), 'Giao nhanh', { replace: true })
-//     await t.click(Selector('[data-testid="shipcod"]'))
-//     await t.click(Selector('[data-testid="dat"]'))
-//     .expect(Selector('.ant-message').withText("Đặt hàng thành công!").exists).ok();
-    
-
-// });
-
-test('[ViewProduct-] Test chức năng xóa sản phẩm khỏi giỏ hàng', async t => {
+test('[Order-] Test chức năng đặt hàng ship cod', async t => {
     await t.useRole(customer2)
     .navigateTo('http://localhost:3000')
     await t.wait(3000)
     await t.click(Selector('[data-testid="cartPageBtn"]'))
     await t.click(Selector('[data-testid="dathang"]'))
-    await t.typeText(Selector('[data-testid="ghichu"]'), 'Giao nhanh', { replace: true })
+    await t.typeText(Selector('[data-testid="ghichu"]'), 'Giao nhanh lên nha bạn ơi', { replace: true })
+    await t.click(Selector('[data-testid="shipcod"]'))
+    .debug();
+    await t.click(Selector('[data-testid="dat"]'))
+    .expect(Selector('.ant-message').withText("Đặt hàng thành công!").exists).ok();
+    
+
+});
+
+test('[Order-1] Test chức năng đặt hàng chuyển khoản', async t => {
+    await t.useRole(customer2)
+    .navigateTo('http://localhost:3000')
+    await t.wait(3000)
+    await t.click(Selector('[data-testid="cartPageBtn"]'))
+    await t.click(Selector('[data-testid="dathang"]'))
+    await t.typeText(Selector('[data-testid="ghichu"]'), 'Giao nhanh lên nha bạn ơi', { replace: true })
     await t.click(Selector('[data-testid="chuyenkhoan"]'))
     await t.click(Selector('[data-testid="dat"]'))
     .expect(Selector('.ant-message').withText("Đặt hàng thành công!").exists).ok();

@@ -5,6 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUserById, updateUser, updatePassword } from '../../../redux/Slicer/userSlice';
 import moment from 'moment';
+import {validateUserInfoModule} from "../../../modules/validateUserInfoModule"
 
 const { Title } = Typography;
 
@@ -158,6 +159,9 @@ const [errorMessage, setErrorMessage] = useState('');
   const birthError = validateBirthDay(values.dateOfBirth);
   if(birthError){
     setErrorMessage(birthError)
+    return;
+  }
+  if(!validateUserInfoModule(values.username,values.phoneNumber,user.email,values.address,values.dateOfBirth,values.gender) ){
     return;
   }
   

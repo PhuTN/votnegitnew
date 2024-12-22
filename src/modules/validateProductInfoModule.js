@@ -1,15 +1,15 @@
 export function validateProductInfoModule(name, description, type, brand) {
     let isValid = true;
-
+    const specialChars = /[!@#$%^~&*(),.?":{}|<>/+=_\-\\|;'\[\]<>`]/;
     // Kiểm tra tên sản phẩm
-    const namePattern = /^[A-Za-zàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựýỷỹỵđĐ ]+$/;
+  
     if (!name) {
         console.log("Tên sản phẩm bắt buộc phải có dữ liệu");
         isValid = false;
     } else if (name.length < 10 || name.length > 150) {
         console.log("Tên sản phẩm phải có độ dài từ 10 đến 150 ký tự");
         isValid = false;
-    } else if (!namePattern.test(name)) {
+    } else if (specialChars.test(name) || /\d/.test(name)) {
         console.log("Tên sản phẩm chỉ chứa chữ cái và dấu cách");
         isValid = false;
     }

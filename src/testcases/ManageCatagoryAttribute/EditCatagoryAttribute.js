@@ -4,64 +4,6 @@ import{warehouseStaff} from '../utilities/createRole'
 fixture('Test chức năng nhân viên kho hoặc admin chỉnh sửa thuộc tính của loại sản phẩm')
 
 
-test('[ManageCatagoryAttribute-11] Sửa thuộc tính "Mức giá" loại sản phẩm vợt thành công ', async t => {
-  
-
-    await t
-        .useRole(warehouseStaff)
-        //B1
-        .navigateTo('http://localhost:3000/admin') ;
-
-
-        
-    const categoryMenu = Selector('[data-testid="menu-products"]'); // Chọn menu "Sản phẩm" dựa trên testid
-    await t.click(categoryMenu);
-
-    // Chọn "Vợt" từ các mục con
-    const categoryItem = Selector('[data-testid="menu-votp"]'); // Chọn "Vợt" dựa trên testid
-    await t.click(categoryItem);
-    
-    const editButton = Selector('[data-testid="Mức giá"]');
-await t.click(editButton);
-
-    await t
-    
-    .typeText(Selector('[data-testid="attribute"]'), 'Thuộc tính hợp lệ', { replace: true })
-    .click(Selector('[data-testid="modal-ok-button"]').withText('OK'))
-    .click(Selector('button').withText('Lưu'))
-    .expect(Selector('.ant-message').withText("Lưu thành công.").exists).ok();
-
-
-});
-
-
-test('[ManageCatagoryAttribute-12] Sửa thuộc tính loại sản phẩm giày thành công ', async t => {
-  
-
-    await t
-        .useRole(warehouseStaff)
-        //B1
-        .navigateTo('http://localhost:3000/admin') ;
-
-
-        
-    const categoryMenu = Selector('[data-testid="menu-products"]'); // Chọn menu "Sản phẩm" dựa trên testid
-    await t.click(categoryMenu);
-
-    // Chọn "Vợt" từ các mục con
-    const categoryItem = Selector('[data-testid="menu-giayp"]'); 
-    await t.click(categoryItem);
-    
-    const editButton = Selector('[data-testid="Mức giá"]');
-await t.click(editButton);
-
-    await t
-    
-    .typeText(Selector('[data-testid="attribute"]'), 'Thuộc tính hợp lệ', { replace: true })
-    .click(Selector('[data-testid="modal-ok-button"]').withText('OK'))
-    .click(Selector('button').withText('Lưu'))
-    .expect(Selector('.ant-message').withText("Lưu thành công.").exists).ok();
-});
 
 
 
@@ -245,6 +187,67 @@ const optionInactive = Selector('[data-testid="option-inactive-Giá hợp lệ"]
         .expect(Selector('.ant-message').withText("Lưu thành công.").exists).ok();
     
 });
+
+
+test('[ManageCatagoryAttribute-11] Sửa thuộc tính "Mức giá" loại sản phẩm vợt thành công ', async t => {
+  
+
+    await t
+        .useRole(warehouseStaff)
+        //B1
+        .navigateTo('http://localhost:3000/admin') ;
+
+
+        
+    const categoryMenu = Selector('[data-testid="menu-products"]'); // Chọn menu "Sản phẩm" dựa trên testid
+    await t.click(categoryMenu);
+
+    // Chọn "Vợt" từ các mục con
+    const categoryItem = Selector('[data-testid="menu-votp"]'); // Chọn "Vợt" dựa trên testid
+    await t.click(categoryItem);
+    
+    const editButton = Selector('[data-testid="Mức giá"]');
+await t.click(editButton);
+
+    await t
+    
+    .typeText(Selector('[data-testid="attribute"]'), 'Thuộc tính hợp lệ', { replace: true })
+    .click(Selector('[data-testid="modal-ok-button"]').withText('OK'))
+    .click(Selector('button').withText('Lưu'))
+    .expect(Selector('.ant-message').withText("Lưu thành công.").exists).ok();
+
+
+});
+
+
+test('[ManageCatagoryAttribute-12] Sửa thuộc tính loại sản phẩm giày thành công ', async t => {
+  
+
+    await t
+        .useRole(warehouseStaff)
+        //B1
+        .navigateTo('http://localhost:3000/admin') ;
+
+
+        
+    const categoryMenu = Selector('[data-testid="menu-products"]'); // Chọn menu "Sản phẩm" dựa trên testid
+    await t.click(categoryMenu);
+
+    // Chọn "Vợt" từ các mục con
+    const categoryItem = Selector('[data-testid="menu-giayp"]'); 
+    await t.click(categoryItem);
+    
+    const editButton = Selector('[data-testid="Mức giá"]');
+await t.click(editButton);
+
+    await t
+    
+    .typeText(Selector('[data-testid="attribute"]'), 'Thuộc tính hợp lệ', { replace: true })
+    .click(Selector('[data-testid="modal-ok-button"]').withText('OK'))
+    .click(Selector('button').withText('Lưu'))
+    .expect(Selector('.ant-message').withText("Lưu thành công.").exists).ok();
+});
+
 
 
 

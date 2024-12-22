@@ -1,15 +1,15 @@
 export function validateUserInfoModule(fullName, phone, email,   address, dob, gender) {
     let isValid = true;
-
+    const specialChars = /[!@#$%^~&*(),.?":{}|<>/+=_\-\\|;'\[\]<>`]/;
     // Kiểm tra họ tên
-    const fullNamePattern = /^[A-Za-zàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựýỷỹỵđĐ ]+$/;
+  
     if (!fullName) {
         console.log("Họ Tên bắt buộc phải có dữ liệu");
         isValid = false;
     } else if (fullName.length < 2 || fullName.length > 50) {
         console.log("Họ Tên phải có độ dài từ 2 đến 50 ký tự");
         isValid = false;
-    } else if (!fullNamePattern.test(fullName)) {
+    } else if (specialChars.test(fullName) || /\d/.test(fullName)) {
         console.log("Họ Tên chỉ chứa chữ cái và dấu cách");
         isValid = false;
     }
